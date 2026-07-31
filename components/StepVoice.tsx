@@ -1,0 +1,157 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { audioSupported, startRecording, type Recorder } from "@/lib/voice";
+import { useSession } from "@/lib/store";
+
+export default function StepVoice() {
+  const rec = useRef<Recorder | null>(null);
+  const raf = useRef(0);
+  const tick = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const [state, setState] = useState<"diam" | "merekam" | "selesai">("diam");
+  const [seconds, setSeconds] = useState(0);
+  const [level, setLevel] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const [url, setUrl] = useState<string | null>(null);
+
+  const { event, voice, setVoice, goto } = useSession();
+  const max = event?.maxVoiceSeconds ?? 15;
+
+  const cleanup = () => {
+    cancelAnimationFrame(raf.current);
+    if (tick.current) clearInterval(tick.current);
+    tick.current = null;
+  };
+
+  useEffect(() => cleanup, []);
+  useEffect(() => {
+    if (!voice) return setUrl(null);
+    const u = URL.createObjectURL(voice);
+    setUrl(u);
+    return () => URL.revokeObjectURL(u);
+  }, [voice]);
+
+  const stop = async () => {
+    cleanup();
+    const r = rec.current;
+    rec.current = null;
+    if (!r) return;
+    const blob = await r.stop();
+    setVoice(blob);
+    setState("selesai");
+  };
+
+  const begin = async () => {
+    setError(null);
+    try {
+      const r = await startRecording();
+      rec.current = r;
+      setState("merekam");
+      setSeconds(0);
+
+      const meter = () => {
+        setLevel(r.level());
+        raf.current = requestAnimationFrame(meter);
+      };
+      meter();
+
+      tick.current = setInterval(() => {
+        setSeconds((s) => {
+          if (s + 1 >= max) void stop();
+          return s + 1;
+        });
+      }, 1000);
+    } catch {
+      setError(
+        "Mikrofon tidak bisa dibuka. Izinkan akses lewat ikon gembok di address bar, atau lewati langkah ini."
+      );
+    }
+  };
+
+  if (!event) return null;
+
+  return (
+    <section className="mx-auto max-w-xl">
+      <h2 className="font-display text-2xl leading-tight tracking-tight">
+        Titip pesan untuk {event.names.split(" & ")[0]} dan{" "}
+        {event.names.split(" & ")[1] ?? "pasangan"}
+      </h2>
+      <p className="mt-3 text-[15px] leading-relaxed text-smoke">
+        Maksimal {max} detik. Foto tetap bisa diunduh tanpa ini — tapi rekamanmu
+        akan dijahit jadi video yang bisa langsung dibagikan.
+      </p>
+
+      <div className="mt-8 overflow-hidden rounded-2xl p-5 ring-1 ring-edge sm:p-6">
+        {/* Meteran level: tanpa ini tamu tidak tahu mikrofonnya menangkap
+            suara sampai rekaman selesai dan terlambat diperbaiki. Lebar bar
+            mengecil di layar sempit supaya 28 batang tidak meluber ke luar
+            kartu — ini yang paling sering dites di HP, bukan desktop. */}
+        <div className="flex h-24 items-center justify-center gap-1 sm:gap-1.5">
+          {Array.from({ length: 28 }).map((_, i) => {
+            const active = state === "merekam" && level * 28 > i;
+            const h = 8 + (active ? Math.sin((i / 28) * Math.PI) * level * 62 : 0);
+            return (
+              <span
+                key={i}
+                className="w-1 rounded-full transition-all duration-75 sm:w-1.5"
+                style={{
+                  height: `${h}px`,
+                  background: active ? "var(--color-flash)" : "var(--color-edge)",
+                }}
+              />
+            );
+          })}
+        </div>
+
+        <p className="mt-2 text-center font-mono text-[11px] text-smoke">
+          {state === "merekam"
+            ? `${String(seconds).padStart(2, "0")} / ${max} detik`
+            : state === "selesai"
+              ? "rekaman tersimpan"
+              : "belum merekam"}
+        </p>
+
+        {url && state === "selesai" && (
+          <audio src={url} controls className="mt-4 w-full" />
+        )}
+
+        {error && <p className="mt-4 text-[13px] leading-relaxed text-live">{error}</p>}
+
+        <div className="mt-6 grid grid-cols-2 gap-2">
+          {state === "merekam" ? (
+            <button
+              onClick={stop}
+              className="col-span-2 rounded-full bg-live py-3.5 font-display text-base text-paper"
+            >
+              Berhenti merekam
+            </button>
+          ) : (
+            <button
+              onClick={begin}
+              disabled={!audioSupported()}
+              className="col-span-2 rounded-full bg-paper py-3.5 font-display text-base text-ink disabled:opacity-40"
+            >
+              {state === "selesai" ? "Rekam ulang" : "Mulai merekam"}
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-5 flex gap-2">
+        <button
+          onClick={() => goto("potret")}
+          className="rounded-full px-5 py-3 text-[13px] text-smoke ring-1 ring-edge transition hover:text-paper"
+        >
+          Kembali
+        </button>
+        <button
+          onClick={() => goto("struk")}
+          className="btn-primary flex-1 rounded-full py-3 font-display text-base tracking-tight text-ink"
+        >
+          {voice ? "Lanjut ke hasil" : "Lewati, langsung ke hasil"}
+        </button>
+      </div>
+    </section>
+  );
+}
