@@ -15,12 +15,18 @@ export default function StripCanvas({
   scale = 0.45,
   className = "",
   fill = false,
+  fitHeight = false,
 }: {
   scale?: number;
   className?: string;
   /** Isi penuh induknya (posisi absolut) alih-alih mengikuti lebar alami —
       dipakai saat canvas ini jadi lapisan dasar di balik video kamera hidup. */
   fill?: boolean;
+  /** Ikuti tinggi kotak pembungkus (yang punya aspect-ratio + max-height
+      sendiri) alih-alih lebar penuh — dipakai supaya strip vertikal panjang
+      tidak meluber di layar HP. Pembungkus wajib set aspect-ratio yang sama
+      dengan template, kalau tidak gambar akan gepeng. */
+  fitHeight?: boolean;
 }) {
   const holder = useRef<HTMLDivElement>(null);
   const { template, frames, filterId, mirror, event } = useSession();
@@ -41,14 +47,16 @@ export default function StripCanvas({
       if (dead || !holder.current) return;
       canvas.className = fill
         ? "absolute inset-0 h-full w-full object-cover"
-        : "block h-auto w-full";
+        : fitHeight
+          ? "block h-full w-full"
+          : "block h-auto w-full";
       holder.current.replaceChildren(canvas);
     })();
 
     return () => {
       dead = true;
     };
-  }, [template, frames, filterId, mirror, event, scale, fill]);
+  }, [template, frames, filterId, mirror, event, scale, fill, fitHeight]);
 
   return <div ref={holder} className={className} />;
 }

@@ -13,38 +13,7 @@ import { captureFrame } from "@/lib/compositor";
 import { getFilter } from "@/lib/filters";
 import { useSession } from "@/lib/store";
 import StripCanvas from "./StripCanvas";
-
-function RetakeIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}
-      strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
-      <path d="M1 4v6h6" />
-      <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
-    </svg>
-  );
-}
-
-function ContinueIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}
-      strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
-      <line x1="5" y1="12" x2="19" y2="12" />
-      <polyline points="12 5 19 12 12 19" />
-    </svg>
-  );
-}
-
-function FlipIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}
-      strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
-      <path d="M23 4v6h-6" />
-      <path d="M1 20v-6h6" />
-      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10" />
-      <path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14" />
-    </svg>
-  );
-}
+import { RetakeIcon, ContinueIcon, FlipIcon } from "./icons";
 
 export default function StepShoot() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -206,12 +175,12 @@ export default function StepShoot() {
     : null;
 
   return (
-    <section className="mx-auto max-w-md space-y-5">
+    <section className="step-enter mx-auto max-w-md space-y-4">
       {/* Bingkai hidup: strip yang sudah terisi dan video kamera duduk di
           lubang yang sama, satu tampilan — bukan kamera lalu strip terpisah.
           Tamu langsung melihat pose masuk ke bingkai final. */}
       <div
-        className="relative mx-auto max-h-[66dvh] w-auto max-w-full overflow-hidden rounded-2xl bg-black ring-1 ring-edge sm:max-h-[74dvh]"
+        className="relative mx-auto max-h-[58dvh] w-auto max-w-full overflow-hidden rounded-2xl bg-black ring-1 ring-edge sm:max-h-[74dvh]"
         style={{ aspectRatio: `${template.width} / ${template.height}` }}
       >
         <StripCanvas

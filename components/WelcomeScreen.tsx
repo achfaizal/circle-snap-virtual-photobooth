@@ -20,7 +20,7 @@ export default function WelcomeScreen({
 }) {
   return (
     <div className="relative flex min-h-[calc(100dvh-3rem)] flex-col items-center justify-center px-6 py-16 text-center">
-      <div className="relative z-10 flex flex-col items-center">
+      <div className="step-enter relative z-10 flex flex-col items-center">
         <div className="grid h-16 w-16 place-items-center rounded-full ring-1 ring-edge">
           <span className="font-display text-lg tracking-wide text-flash">
             {initials(event.names)}

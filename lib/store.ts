@@ -60,7 +60,7 @@ export const useSession = create<SessionState>((set, get) => ({
   cursor: 0,
   filterId: "cerah",
   mirror: true,
-  countdownFrom: 5,
+  countdownFrom: 3,
   autoContinue: true,
   shooting: false,
   voice: null,

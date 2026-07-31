@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { audioSupported, startRecording, type Recorder } from "@/lib/voice";
 import { useSession } from "@/lib/store";
+import { Mic, Square, RotateCcw, ArrowLeft, ArrowRight } from "./icons";
 
 export default function StepVoice() {
   const rec = useRef<Recorder | null>(null);
@@ -72,7 +73,7 @@ export default function StepVoice() {
   if (!event) return null;
 
   return (
-    <section className="mx-auto max-w-xl">
+    <section className="step-enter mx-auto max-w-xl">
       <h2 className="font-display text-2xl leading-tight tracking-tight">
         Titip pesan untuk {event.names.split(" & ")[0]} dan{" "}
         {event.names.split(" & ")[1] ?? "pasangan"}
@@ -122,16 +123,22 @@ export default function StepVoice() {
           {state === "merekam" ? (
             <button
               onClick={stop}
-              className="col-span-2 rounded-full bg-live py-3.5 font-display text-base text-paper"
+              className="col-span-2 flex items-center justify-center gap-2 rounded-full bg-live py-3.5 font-display text-base text-paper transition active:scale-[0.98]"
             >
+              <Square className="h-4 w-4" />
               Berhenti merekam
             </button>
           ) : (
             <button
               onClick={begin}
               disabled={!audioSupported()}
-              className="col-span-2 rounded-full bg-paper py-3.5 font-display text-base text-ink disabled:opacity-40"
+              className="col-span-2 flex items-center justify-center gap-2 rounded-full bg-paper py-3.5 font-display text-base text-ink transition active:scale-[0.98] disabled:opacity-40"
             >
+              {state === "selesai" ? (
+                <RotateCcw className="h-4 w-4" />
+              ) : (
+                <Mic className="h-4 w-4" />
+              )}
               {state === "selesai" ? "Rekam ulang" : "Mulai merekam"}
             </button>
           )}
@@ -141,15 +148,17 @@ export default function StepVoice() {
       <div className="mt-5 flex gap-2">
         <button
           onClick={() => goto("potret")}
-          className="rounded-full px-5 py-3 text-[13px] text-smoke ring-1 ring-edge transition hover:text-paper"
+          className="flex items-center gap-1.5 rounded-full px-5 py-3 text-[13px] text-smoke ring-1 ring-edge transition hover:text-paper"
         >
+          <ArrowLeft className="h-4 w-4" />
           Kembali
         </button>
         <button
           onClick={() => goto("struk")}
-          className="btn-primary flex-1 rounded-full py-3 font-display text-base tracking-tight text-ink"
+          className="btn-primary flex flex-1 items-center justify-center gap-2 rounded-full py-3 font-display text-base tracking-tight text-ink"
         >
           {voice ? "Lanjut ke hasil" : "Lewati, langsung ke hasil"}
+          <ArrowRight className="h-4 w-4" />
         </button>
       </div>
     </section>

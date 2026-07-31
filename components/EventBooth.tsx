@@ -8,11 +8,12 @@ import StepResult from "./StepResult";
 import StepShoot from "./StepShoot";
 import StepVoice from "./StepVoice";
 import WelcomeScreen from "./WelcomeScreen";
+import { Mic } from "./icons";
 
 const LABEL: Record<string, string> = {
   bingkai: "Pilih bingkai",
   potret: "Sesi foto",
-  suara: "Pesan suara",
+  suara: "Voice",
   struk: "Selesai",
 };
 
@@ -58,8 +59,8 @@ export default function EventBooth({ code }: { code: string }) {
   const body = !entered ? (
     <WelcomeScreen event={event} onEnter={() => setEntered(true)} />
   ) : (
-    <main className="relative z-10 mx-auto w-full max-w-5xl px-4 pb-28 pt-6 sm:px-8 sm:pb-16 sm:pt-10">
-      <header className="mb-6">
+    <main className="relative z-10 mx-auto w-full max-w-5xl px-4 pb-10 pt-5 sm:px-8 sm:pb-16 sm:pt-10">
+      <header className="mb-4">
         {/* Sisa kuota sengaja tidak ditampilkan ke tamu — itu informasi
             per-event untuk panitia/admin (nanti bagian model langganan),
             bukan sesuatu yang perlu dipantau tamu selama sesi foto. */}
@@ -74,7 +75,7 @@ export default function EventBooth({ code }: { code: string }) {
 
         {/* Penanda langkah: bilah, bukan angka 01/02/03. Tamu perlu tahu
             "tinggal sedikit lagi", bukan nomor urut. */}
-        <div className="mt-5 flex items-center gap-2">
+        <div className="mt-3.5 flex items-center gap-2">
           {order.map((s, i) => (
             <div key={s} className="flex flex-1 items-center gap-2">
               <div
@@ -85,7 +86,8 @@ export default function EventBooth({ code }: { code: string }) {
             </div>
           ))}
         </div>
-        <p className="tracked mt-2.5 font-mono text-[10px] text-smoke">
+        <p className="tracked mt-2.5 flex items-center gap-1.5 font-mono text-[10px] text-smoke">
+          {step === "suara" && <Mic className="h-3 w-3" />}
           {LABEL[step]}
         </p>
       </header>
