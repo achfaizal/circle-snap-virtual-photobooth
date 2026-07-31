@@ -15,18 +15,24 @@ export default function StripCanvas({
   scale = 0.45,
   className = "",
   fill = false,
-  fitHeight = false,
+  natural = false,
 }: {
   scale?: number;
   className?: string;
   /** Isi penuh induknya (posisi absolut) alih-alih mengikuti lebar alami —
       dipakai saat canvas ini jadi lapisan dasar di balik video kamera hidup. */
   fill?: boolean;
-  /** Ikuti tinggi kotak pembungkus (yang punya aspect-ratio + max-height
-      sendiri) alih-alih lebar penuh — dipakai supaya strip vertikal panjang
-      tidak meluber di layar HP. Pembungkus wajib set aspect-ratio yang sama
-      dengan template, kalau tidak gambar akan gepeng. */
-  fitHeight?: boolean;
+  /** Canvas menentukan ukurannya sendiri lewat max-height/max-width bawaan
+      elemen replaced (persis seperti <img>), bukan mengikuti lebar induk.
+      Ini SATU-SATUNYA cara yang konsisten di Chromium maupun WebKit — div
+      pembungkus dengan aspect-ratio + max-height + width:auto TIDAK
+      menyusut lebarnya di Safari (box block statis di sana mengisi lebar
+      tersedia dulu, baru memotong tinggi lewat max-height, jadi rasio
+      rusak). `className` di sini diterapkan langsung ke <canvas>, dan div
+      pembungkus dibuat `display:contents` supaya tidak ikut memengaruhi
+      layout — pemanggil wajib membungkusnya sendiri dengan elemen yang
+      menyusut mengikuti konten (mis. inline-block atau flex item). */
+  natural?: boolean;
 }) {
   const holder = useRef<HTMLDivElement>(null);
   const { template, frames, filterId, mirror, event } = useSession();
@@ -47,8 +53,8 @@ export default function StripCanvas({
       if (dead || !holder.current) return;
       canvas.className = fill
         ? "absolute inset-0 h-full w-full object-cover"
-        : fitHeight
-          ? "block h-full w-full"
+        : natural
+          ? `block h-auto w-auto ${className}`
           : "block h-auto w-full";
       holder.current.replaceChildren(canvas);
     })();
@@ -56,7 +62,7 @@ export default function StripCanvas({
     return () => {
       dead = true;
     };
-  }, [template, frames, filterId, mirror, event, scale, fill, fitHeight]);
+  }, [template, frames, filterId, mirror, event, scale, fill, natural, className]);
 
-  return <div ref={holder} className={className} />;
+  return <div ref={holder} className={natural ? "contents" : className} />;
 }

@@ -178,16 +178,21 @@ export default function StepShoot() {
     <section className="step-enter mx-auto max-w-md space-y-4">
       {/* Bingkai hidup: strip yang sudah terisi dan video kamera duduk di
           lubang yang sama, satu tampilan — bukan kamera lalu strip terpisah.
-          Tamu langsung melihat pose masuk ke bingkai final. */}
-      <div
-        className="relative mx-auto max-h-[58dvh] w-auto max-w-full overflow-hidden rounded-2xl bg-black ring-1 ring-edge sm:max-h-[74dvh]"
-        style={{ aspectRatio: `${template.width} / ${template.height}` }}
-      >
+          Tamu langsung melihat pose masuk ke bingkai final.
+
+          Ukuran kotak ditentukan oleh canvas (mode `natural`) lewat
+          max-height/max-width bawaan elemen replaced, bukan aspect-ratio
+          pada div pembungkus — div dengan aspect-ratio + max-height +
+          width:auto tidak menyusut lebarnya di Safari/WebKit (lihat catatan
+          di StripCanvas.tsx). Video, hitung mundur, flash, dan pesan error
+          jadi lapisan absolute di atas canvas yang sudah berukuran benar. */}
+      <div className="flex justify-center">
+      <div className="relative inline-block overflow-hidden rounded-2xl bg-black ring-1 ring-edge">
         <StripCanvas
           key={filled}
-          fill
+          natural
           scale={0.6}
-          className="developing absolute inset-0 h-full w-full"
+          className="developing block max-h-[58dvh] max-w-full sm:max-h-[74dvh]"
         />
 
         {/* Satu elemen <video> yang sama sepanjang hidup komponen — hanya
@@ -251,6 +256,7 @@ export default function StepShoot() {
             </span>
           </div>
         )}
+      </div>
       </div>
 
       {reviewing ? (

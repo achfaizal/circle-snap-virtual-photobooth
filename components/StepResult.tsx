@@ -199,11 +199,18 @@ export default function StepResult() {
     <section className="step-enter relative grid gap-5 lg:grid-cols-[0.55fr_0.45fr] lg:items-start">
       {celebrate && <Confetti />}
 
-      <div
-        className="developing mx-auto max-h-[36dvh] w-auto max-w-full overflow-hidden rounded-3xl shadow-[0_30px_80px_-24px_rgba(0,0,0,0.95)] ring-1 ring-edge lg:max-h-none lg:max-w-none"
-        style={{ aspectRatio: `${template.width} / ${template.height}` }}
-      >
-        <StripCanvas scale={0.6} fitHeight className="h-full w-full" />
+      {/* flex+justify-center (bukan block+mx-auto) supaya kotaknya menyusut
+          mengikuti konten, bukan mengisi lebar penuh grid column. Canvas di
+          dalam (mode `natural`) yang benar-benar menentukan ukuran lewat
+          max-height/max-width bawaan — lihat catatan di StripCanvas.tsx. */}
+      <div className="flex justify-center">
+        <div className="developing relative inline-block overflow-hidden rounded-3xl shadow-[0_30px_80px_-24px_rgba(0,0,0,0.95)] ring-1 ring-edge">
+          <StripCanvas
+            scale={0.6}
+            natural
+            className="max-h-[36dvh] max-w-full lg:max-h-none lg:max-w-none"
+          />
+        </div>
       </div>
 
       <div className="space-y-4">

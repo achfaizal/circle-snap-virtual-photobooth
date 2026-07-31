@@ -44,12 +44,15 @@ export default function StepFrame() {
           <button
             key={active.id}
             onClick={() => chooseTemplate(active)}
-            className="frame-slide-in group block w-full text-left focus-visible:outline-none"
+            className="frame-slide-in group flex w-full justify-center text-left focus-visible:outline-none"
           >
-            <div
-              className="relative mx-auto max-h-[30dvh] w-auto max-w-[260px] overflow-hidden rounded-2xl ring-1 ring-edge transition group-hover:ring-flash group-focus-visible:ring-flash"
-              style={{ aspectRatio: `${active.width} / ${active.height}` }}
-            >
+            {/* Ukuran kotak ditentukan oleh <img> itu sendiri lewat
+                max-height/max-width + auto (perilaku bawaan elemen replaced,
+                konsisten di semua browser) — bukan lewat aspect-ratio pada
+                div pembungkus, yang lebarnya tidak ikut menyusut di
+                Safari/WebKit saat max-height kena batas. Pembungkus dibuat
+                inline-block supaya menyusut mengikuti ukuran img. */}
+            <div className="relative inline-block overflow-hidden rounded-2xl ring-1 ring-edge transition group-hover:ring-flash group-focus-visible:ring-flash">
               {/* Arsir menandai lubang tempat foto akan jatuh. */}
               <div
                 className="absolute inset-0"
@@ -62,7 +65,7 @@ export default function StepFrame() {
               <img
                 src={active.overlay}
                 alt=""
-                className="relative h-full w-full object-contain"
+                className="relative block max-h-[30dvh] max-w-[260px] h-auto w-auto object-contain"
               />
             </div>
           </button>
