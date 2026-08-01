@@ -15,6 +15,7 @@ export {
   Share2,
   ChevronLeft,
   ChevronRight,
+  X,
 } from "lucide-react";
 
 export function RetakeIcon({ className }: { className?: string }) {

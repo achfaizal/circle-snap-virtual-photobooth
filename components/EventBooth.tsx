@@ -2,18 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { getEvent, readUsed, type EventTheme } from "@/lib/event";
-import { useSession, type Step } from "@/lib/store";
+import { useSession } from "@/lib/store";
 import StepFrame from "./StepFrame";
 import StepResult from "./StepResult";
 import StepShoot from "./StepShoot";
 import StepVoice from "./StepVoice";
 import WelcomeScreen from "./WelcomeScreen";
-import { Mic } from "./icons";
 
-const LABEL: Record<string, string> = {
-  bingkai: "Pilih bingkai",
-  potret: "Sesi foto",
-  suara: "Voice",
+/** Label sesi yang tampil di bawah nama acara — cukup teks kecil, bukan
+    bilah progress, supaya tamu tetap tahu sedang di langkah mana tanpa
+    header jadi ramai lagi. */
+const STEP_LABEL: Record<string, string> = {
+  bingkai: "Pilih Bingkai",
+  potret: "Sesi Foto",
+  suara: "Pesan Suara",
   struk: "Selesai",
 };
 
@@ -49,10 +51,6 @@ export default function EventBooth({ code }: { code: string }) {
   if (!event) return null;
 
   const left = Math.max(0, event.quota - used);
-  const order: Step[] = event.voiceNoteEnabled
-    ? ["bingkai", "potret", "suara", "struk"]
-    : ["bingkai", "potret", "struk"];
-  const at = order.indexOf(step);
   const theme = event.theme;
   const decorDir = theme?.decorDir;
 
@@ -60,36 +58,22 @@ export default function EventBooth({ code }: { code: string }) {
     <WelcomeScreen event={event} onEnter={() => setEntered(true)} />
   ) : (
     <main className="relative z-10 mx-auto w-full max-w-5xl px-4 pb-10 pt-5 sm:px-8 sm:pb-16 sm:pt-10">
-      <header className="mb-4">
-        {/* Sisa kuota sengaja tidak ditampilkan ke tamu — itu informasi
-            per-event untuk panitia/admin (nanti bagian model langganan),
-            bukan sesuatu yang perlu dipantau tamu selama sesi foto. */}
-        <div className="min-w-0">
-          <h1 className="truncate font-display text-xl leading-tight tracking-tight">
-            {event.names}
-          </h1>
-          <p className="mt-1 truncate font-mono text-[11px] text-smoke">
-            {event.date} · {event.venue}
-          </p>
-        </div>
-
-        {/* Penanda langkah: bilah, bukan angka 01/02/03. Tamu perlu tahu
-            "tinggal sedikit lagi", bukan nomor urut. */}
-        <div className="mt-3.5 flex items-center gap-2">
-          {order.map((s, i) => (
-            <div key={s} className="flex flex-1 items-center gap-2">
-              <div
-                className={`h-[3px] flex-1 rounded-full transition-all duration-500 ${
-                  i <= at ? "brand-gradient" : "bg-edge"
-                }`}
-              />
-            </div>
-          ))}
-        </div>
-        <p className="tracked mt-2.5 flex items-center gap-1.5 font-mono text-[10px] text-smoke">
-          {step === "suara" && <Mic className="h-3 w-3" />}
-          {LABEL[step]}
+      {/* Sisa kuota sengaja tidak ditampilkan ke tamu — itu informasi
+          per-event untuk panitia/admin (nanti bagian model langganan),
+          bukan sesuatu yang perlu dipantau tamu selama sesi foto.
+          Header: "Happy Wedding" jadi sapaan utama, nama acara di
+          bawahnya, lalu label sesi kecil — semuanya center, dipakai sama
+          di keempat langkah (bingkai/potret/suara/struk). */}
+      <header className="mb-6 text-center">
+        <p className="text-brand-gradient font-display text-2xl font-semibold leading-tight tracking-tight sm:text-4xl">
+          Happy Wedding
         </p>
+        <h1 className="mt-1.5 truncate font-display text-lg leading-tight tracking-tight text-smoke sm:text-xl">
+          {event.names}
+        </h1>
+        <span className="tracked mt-3 inline-block rounded-full px-3 py-1 font-mono text-[10px] text-smoke ring-1 ring-edge">
+          {STEP_LABEL[step]}
+        </span>
       </header>
 
       {left === 0 && step !== "struk" ? (
@@ -118,27 +102,23 @@ export default function EventBooth({ code }: { code: string }) {
       {decorDir && (
         <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
           {/* Bunga sudut dipakai ulang dari aset bingkai — satu gambar,
-              dipantulkan/diputar lewat CSS ke keempat sudut, jadi tema tetap
-              terasa dari selamat datang sampai struk tanpa aset tambahan.
-              Sudut atas cuma muncul di layar selamat datang — begitu masuk
-              ke langkah sesi, judul & progress bar butuh ruang di pojok itu,
-              jadi hanya sudut bawah yang dipertahankan. */}
-          {!entered && (
-            <>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={`${decorDir}/decor-tl.png`}
-                alt=""
-                className="absolute left-0 top-0 w-28 opacity-80 sm:w-40"
-              />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={`${decorDir}/decor-tl.png`}
-                alt=""
-                className="absolute right-0 top-0 w-28 -scale-x-100 opacity-80 sm:w-40"
-              />
-            </>
-          )}
+              dipantulkan/diputar lewat CSS ke keempat sudut, jadi tema
+              terasa konsisten dari selamat datang sampai struk. Sekarang
+              tetap tampil di keempat sisi sepanjang sesi (bukan cuma sudut
+              bawah setelah masuk) — header sudah cukup ringkas untuk
+              berbagi ruang dengan sudut atas. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`${decorDir}/decor-tl.png`}
+            alt=""
+            className="absolute left-0 top-0 w-24 opacity-80 sm:w-36"
+          />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`${decorDir}/decor-tl.png`}
+            alt=""
+            className="absolute right-0 top-0 w-24 -scale-x-100 opacity-80 sm:w-36"
+          />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={`${decorDir}/decor-tl.png`}

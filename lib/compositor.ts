@@ -37,7 +37,7 @@ function familyFor(face: "display" | "mono"): string {
   return v || (face === "mono" ? "monospace" : "sans-serif");
 }
 
-function coverRect(srcW: number, srcH: number, slot: Slot) {
+export function coverRect(srcW: number, srcH: number, slot: Slot) {
   const slotAspect = slot.w / slot.h;
   const srcAspect = srcW / srcH;
 

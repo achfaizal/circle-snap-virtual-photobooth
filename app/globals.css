@@ -145,6 +145,38 @@ body::before {
   animation-delay: -6s;
 }
 
+/* Kelopak bunga yang mengambang jatuh pelan di layar selamat datang —
+   pelengkap bola cahaya ambien di atas, khusus supaya kesan pertama terasa
+   hidup sebelum tamu masuk ke sesi. Bentuknya dibuat dari satu div persegi
+   dengan radius asimetris (dua sudut membulat penuh, dua sudut lancip) jadi
+   menyerupai kelopak tanpa perlu aset gambar. */
+@keyframes petal-fall {
+  0% {
+    transform: translateY(-10%) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(55vh) translateX(16px) rotate(160deg);
+  }
+  88% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(115vh) translateX(-10px) rotate(320deg);
+    opacity: 0;
+  }
+}
+.petal {
+  position: absolute;
+  top: 0;
+  border-radius: 0 60% 0 60%;
+  animation: petal-fall linear infinite;
+  pointer-events: none;
+}
+
 /* --- ELEMEN TANDA TANGAN -------------------------------------------------
    Slot yang baru terisi "dicuci" seperti film instan: buram dan pucat lalu
    menajam. Ini satu-satunya animasi mencolok di area kamera. */
@@ -165,6 +197,46 @@ body::before {
 }
 .developing {
   animation: develop 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Foto hasil jepretan (StepShoot) muncul seperti kertas keluar dari
+   printer/struk — terungkap dari atas ke bawah lewat clip-path, bukan
+   sekadar fade. Sengaja dibuat pelan dan hampir linear (bukan ease-in-out)
+   supaya terasa seperti kertas ditarik keluar dengan kecepatan tetap, bukan
+   sekadar transisi UI yang buru-buru. */
+@keyframes print-reveal {
+  0% {
+    clip-path: inset(0 0 100% 0);
+  }
+  100% {
+    clip-path: inset(0 0 0% 0);
+  }
+}
+.print-reveal {
+  animation: print-reveal 3000ms cubic-bezier(0.3, 0, 0.15, 1) both;
+}
+
+/* Garis bayangan tipis yang menyusuri tepi bawah bagian yang sudah
+   "tercetak" pada FrameAssembly — dipasang di elemen terpisah dengan
+   durasi & easing PERSIS SAMA dengan .print-reveal (lihat FrameAssembly.tsx)
+   supaya keduanya berjalan sinkron. Ini yang bikin reveal-nya terasa
+   seperti kertas sungguhan sedang didorong keluar, bukan cuma sekadar
+   wipe/fade generik. */
+@keyframes print-edge {
+  0% {
+    top: 0;
+    opacity: 0.9;
+  }
+  92% {
+    opacity: 0.9;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+.print-edge {
+  animation: print-edge 3000ms cubic-bezier(0.3, 0, 0.15, 1) both;
 }
 
 @keyframes flashfire {

@@ -25,7 +25,7 @@ export default function StepFrame() {
 
   return (
     <section className="step-enter mx-auto max-w-md">
-      <p className="max-w-lg text-[15px] leading-relaxed text-smoke">
+      <p className="mx-auto max-w-lg text-center text-[15px] leading-relaxed text-smoke">
         {event.greeting}
       </p>
 
@@ -115,7 +115,7 @@ export default function StepFrame() {
       </button>
 
       {allowed.some((t) => t.textLayers.length > 0) && (
-        <p className="mt-4 rounded-2xl p-3 font-mono text-[11px] leading-relaxed text-smoke ring-1 ring-edge">
+        <p className="mt-4 rounded-2xl p-3 text-center font-mono text-[11px] leading-relaxed text-smoke ring-1 ring-edge">
           Nama <span className="text-paper">{tokens.names}</span> dan tanggalnya
           dicetak otomatis di setiap bingkai. Tidak ada file terpisah per acara —
           satu bingkai melayani semua event.

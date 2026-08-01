@@ -17,6 +17,10 @@ export interface VoiceCardOptions {
   names: string;
   date: string;
   hashtag: string;
+  /** Folder dekorasi sudut event (sama dengan `EventTheme.decorDir`) — kalau
+      ada, bunga sudut yang sama dipakai di UI ikut tercetak di keempat sisi
+      kartu video, bukan cuma latar putih polos. */
+  decorDir?: string;
   onProgress?: (ratio: number) => void;
 }
 
@@ -55,6 +59,37 @@ function family(prop: string, fallback: string) {
   return v || fallback;
 }
 
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`Gambar tidak bisa dimuat: ${src}`));
+    img.src = src;
+  });
+}
+
+/** Satu bunga sudut yang sama dicetak ulang di keempat sisi lewat
+    scale(-1)/(1,-1) — teknik yang sama dengan CSS -scale-x-100/-scale-y-100
+    di EventBooth, cuma versi canvas. */
+function drawCorner(
+  g: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  anchorX: number,
+  anchorY: number,
+  w: number,
+  h: number,
+  flipX: boolean,
+  flipY: boolean
+) {
+  g.save();
+  g.translate(anchorX, anchorY);
+  g.scale(flipX ? -1 : 1, flipY ? -1 : 1);
+  g.globalAlpha = 0.85;
+  g.drawImage(img, 0, 0, w, h);
+  g.restore();
+}
+
 /** Ambil puncak amplitudo per bucket untuk digambar sebagai gelombang. */
 function peaks(buffer: AudioBuffer, buckets: number): number[] {
   const data = buffer.getChannelData(0);
@@ -77,6 +112,7 @@ export async function renderVoiceCard({
   names,
   date,
   hashtag,
+  decorDir,
   onProgress,
 }: VoiceCardOptions): Promise<Blob> {
   const mime = pickMime();
@@ -89,6 +125,14 @@ export async function renderVoiceCard({
   const duration = Math.max(1.2, decoded.duration);
   const wave = peaks(decoded, 72);
 
+  // Dekorasi sudut gagal dimuat bukan alasan kehilangan videonya — kartu
+  // tetap dicetak dengan latar putih polos kalau gambar tidak tersedia.
+  const corner = decorDir
+    ? await loadImage(`${decorDir}/decor-tl.png`).catch(() => null)
+    : null;
+  const cw = 300;
+  const ch = corner ? cw * (corner.height / corner.width) : 0;
+
   const canvas = document.createElement("canvas");
   canvas.width = W;
   canvas.height = H;
@@ -98,13 +142,15 @@ export async function renderVoiceCard({
   const mono = family("--canvas-mono", "monospace");
 
   // Strip ditempatkan di area aman, menyisakan ruang bawah untuk gelombang.
-  const maxH = H * 0.62;
+  // Digeser sedikit ke bawah dari versi awal supaya ada ruang untuk baris
+  // "Happy Wedding" di atas nama.
+  const maxH = H * 0.6;
   const maxW = W * 0.66;
   const k = Math.min(maxW / strip.width, maxH / strip.height);
   const sw = strip.width * k;
   const sh = strip.height * k;
   const sx = (W - sw) / 2;
-  const sy = 250;
+  const sy = 275;
 
   const dest = ctx.createMediaStreamDestination();
   const source = ctx.createBufferSource();
@@ -124,6 +170,16 @@ export async function renderVoiceCard({
     g.fillStyle = BG;
     g.fillRect(0, 0, W, H);
 
+    // Bunga sudut yang sama dengan UI, dicetak di keempat sisi kartu putih
+    // ini supaya videonya tidak terasa lepas dari tema — digambar sebelum
+    // strip & teks supaya tidak menutupi isi utama.
+    if (corner) {
+      drawCorner(g, corner, 0, 0, cw, ch, false, false);
+      drawCorner(g, corner, W, 0, cw, ch, true, false);
+      drawCorner(g, corner, 0, H, cw, ch, false, true);
+      drawCorner(g, corner, W, H, cw, ch, true, true);
+    }
+
     g.save();
     g.shadowColor = "rgba(0,0,0,0.18)";
     g.shadowBlur = 60;
@@ -132,13 +188,24 @@ export async function renderVoiceCard({
     g.restore();
 
     g.textAlign = "center";
+
+    // "Happy Wedding" pakai gradasi ungu→pink→emas yang sama dengan
+    // brand-gradient di UI, biar kartu videonya konsisten sama tampilan app.
+    const heading = g.createLinearGradient(W / 2 - 220, 0, W / 2 + 220, 0);
+    heading.addColorStop(0, "#7C3AED");
+    heading.addColorStop(0.55, "#EC4899");
+    heading.addColorStop(1, "#F59E0B");
+    g.fillStyle = heading;
+    g.font = `600 46px ${display}`;
+    g.fillText("Happy Wedding", W / 2, 108);
+
     g.fillStyle = INK;
-    g.font = `600 62px ${display}`;
-    g.fillText(names, W / 2, 150);
+    g.font = `600 56px ${display}`;
+    g.fillText(names, W / 2, 178);
 
     g.fillStyle = SMOKE;
     g.font = `26px ${mono}`;
-    g.fillText(date, W / 2, 196);
+    g.fillText(date, W / 2, 220);
 
     // Gelombang: bagian yang sudah lewat berwarna terang, sisanya redup.
     const wy = sy + sh + 150;

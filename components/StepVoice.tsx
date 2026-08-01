@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { audioSupported, startRecording, type Recorder } from "@/lib/voice";
 import { useSession } from "@/lib/store";
-import { Mic, Square, RotateCcw, ArrowLeft, ArrowRight } from "./icons";
+import { Mic, Square, RotateCcw, ArrowRight } from "./icons";
 
 export default function StepVoice() {
   const rec = useRef<Recorder | null>(null);
@@ -73,14 +73,14 @@ export default function StepVoice() {
   if (!event) return null;
 
   return (
-    <section className="step-enter mx-auto max-w-xl">
+    <section className="step-enter mx-auto max-w-xl text-center">
       <h2 className="font-display text-2xl leading-tight tracking-tight">
-        Titip pesan untuk {event.names.split(" & ")[0]} dan{" "}
-        {event.names.split(" & ")[1] ?? "pasangan"}
+        Titip Pesan untuk {event.names.split(" & ")[0]} dan{" "}
+        {event.names.split(" & ")[1] ?? "Pasangan"}
       </h2>
-      <p className="mt-3 text-[15px] leading-relaxed text-smoke">
-        Maksimal {max} detik. Foto tetap bisa diunduh tanpa ini — tapi rekamanmu
-        akan dijahit jadi video yang bisa langsung dibagikan.
+      <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-smoke">
+        Ucapkan doa, harapan, atau kenangan manis untuk kedua mempelai. Suaramu
+        akan menjadi kejutan berharga yang bisa mereka dengarkan kapan saja.
       </p>
 
       <div className="mt-8 overflow-hidden rounded-2xl p-5 ring-1 ring-edge sm:p-6">
@@ -145,17 +145,10 @@ export default function StepVoice() {
         </div>
       </div>
 
-      <div className="mt-5 flex gap-2">
-        <button
-          onClick={() => goto("potret")}
-          className="flex items-center gap-1.5 rounded-full px-5 py-3 text-[13px] text-smoke ring-1 ring-edge transition hover:text-paper"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Kembali
-        </button>
+      <div className="mt-5">
         <button
           onClick={() => goto("struk")}
-          className="btn-primary flex flex-1 items-center justify-center gap-2 rounded-full py-3 font-display text-base tracking-tight text-ink"
+          className="btn-primary flex w-full items-center justify-center gap-2 rounded-full py-3 font-display text-base tracking-tight text-ink"
         >
           {voice ? "Lanjut ke hasil" : "Lewati, langsung ke hasil"}
           <ArrowRight className="h-4 w-4" />

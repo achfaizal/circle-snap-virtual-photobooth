@@ -130,6 +130,7 @@ export default function StepResult() {
         names: event.names,
         date: event.date,
         hashtag: event.hashtag,
+        decorDir: event.theme?.decorDir,
         onProgress: setProgress,
       });
       downloadBlob(blob, `${base}.${videoExtension(blob)}`);
@@ -215,7 +216,7 @@ export default function StepResult() {
 
       <div className="space-y-4">
         <div>
-          <h2 className="tracked mb-2.5 font-mono text-[10px] text-smoke">Bawa pulang</h2>
+          <h2 className="tracked mb-2.5 font-mono text-[10px] text-smoke">Download</h2>
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => saveImage("image/png")}
