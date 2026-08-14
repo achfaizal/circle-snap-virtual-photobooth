@@ -15,8 +15,10 @@ import {
   LayoutTemplate,
   LogOut,
   Menu,
+  Package,
   Palette,
   Rocket,
+  Tag,
   Users,
   CalendarDays,
   SlidersHorizontal,
@@ -46,6 +48,10 @@ const STAFF_NAV = [
   { href: "/admin/staff/clients", label: "Klien", icon: Users },
   { href: "/admin/staff/events", label: "Acara", icon: CalendarDays },
   { href: "/admin/frames", label: "Pustaka Bingkai", icon: ImageIcon },
+  // Tahap 2 (Postgres) — berdampingan dengan tiga di atas (JSON), lihat
+  // docs/BRD/09-DELTA-DARI-IMPLEMENTASI.md §5 dan rencana Tahap 2.
+  { href: "/admin/categories", label: "Kategori Acara", icon: Tag },
+  { href: "/admin/packages", label: "Paket", icon: Package },
 ];
 
 /** Menu yang baru muncul setelah ada event aktif — `suffix` ditempel di

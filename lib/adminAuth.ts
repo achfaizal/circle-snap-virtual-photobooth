@@ -19,6 +19,7 @@
  */
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 import { getRepo } from "./repo";
 import type { Client } from "./models/client";
 
@@ -134,6 +135,37 @@ export async function getSessionClientId(): Promise<string | null> {
   const session = decodeSession(store.get(ADMIN_COOKIE_NAME)?.value);
   if (!session || !session.clientId) return null;
   return session.clientId;
+}
+
+/**
+ * Gerbang staf untuk route /api/admin/* BARU yang baca-tulis Postgres
+ * (Tahap 2 — lib/db/*, bukan lib/repo/json-file.ts lama). Dipakai di
+ * baris pertama route handler, sama pola dengan requireAdminSession().
+ *
+ * Sengaja MASIH pakai sesi JSON (Client.isStaff), BUKAN users.platform_role
+ * dari tabel identitas Tahap 1 — menyatukan sesi dengan tabel `users`
+ * adalah pekerjaan Tahap 3 (pindah rute ke /app/*), bukan disebut sama
+ * sekali di 5 butir Tahap 2 (docs/BRD/09-DELTA-DARI-IMPLEMENTASI.md §5).
+ *
+ * 401 kalau belum login sama sekali, 403 kalau login tapi bukan staf —
+ * pola yang sama dipakai app/api/admin/frames/route.ts.
+ */
+export async function requireStaff(): Promise<Client | NextResponse> {
+  const clientId = await getSessionClientId();
+  if (!clientId) {
+    return NextResponse.json({ error: "Belum masuk." }, { status: 401 });
+  }
+  const client = await getRepo().clients.getById(clientId);
+  if (!client) {
+    return NextResponse.json({ error: "Belum masuk." }, { status: 401 });
+  }
+  if (!client.isStaff) {
+    return NextResponse.json(
+      { error: "Halaman ini khusus staf Circle Snap." },
+      { status: 403 }
+    );
+  }
+  return client;
 }
 
 /** Fase satu-klien lama: email dicek nyata terhadap data Client
