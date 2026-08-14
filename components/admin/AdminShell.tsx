@@ -52,6 +52,7 @@ const STAFF_NAV = [
   // docs/BRD/09-DELTA-DARI-IMPLEMENTASI.md §5 dan rencana Tahap 2.
   { href: "/admin/categories", label: "Kategori Acara", icon: Tag },
   { href: "/admin/packages", label: "Paket", icon: Package },
+  { href: "/admin/system-frames", label: "Bingkai Sistem", icon: Frame },
 ];
 
 /** Menu yang baru muncul setelah ada event aktif — `suffix` ditempel di
