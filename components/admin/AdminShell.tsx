@@ -12,6 +12,7 @@ import {
   Image as ImageIcon,
   Images,
   LayoutDashboard,
+  ClipboardCheck,
   LayoutTemplate,
   LogOut,
   Menu,
@@ -54,6 +55,7 @@ const STAFF_NAV = [
   { href: "/admin/packages", label: "Paket", icon: Package },
   { href: "/admin/system-frames", label: "Bingkai Sistem", icon: Frame },
   { href: "/admin/templates", label: "Template", icon: LayoutTemplate },
+  { href: "/admin/purchase-orders", label: "Pesanan", icon: ClipboardCheck },
 ];
 
 /** Menu yang baru muncul setelah ada event aktif — `suffix` ditempel di
