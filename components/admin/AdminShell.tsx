@@ -53,6 +53,7 @@ const STAFF_NAV = [
   { href: "/admin/categories", label: "Kategori Acara", icon: Tag },
   { href: "/admin/packages", label: "Paket", icon: Package },
   { href: "/admin/system-frames", label: "Bingkai Sistem", icon: Frame },
+  { href: "/admin/templates", label: "Template", icon: LayoutTemplate },
 ];
 
 /** Menu yang baru muncul setelah ada event aktif — `suffix` ditempel di

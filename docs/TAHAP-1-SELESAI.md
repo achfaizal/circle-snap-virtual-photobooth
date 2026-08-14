@@ -5,6 +5,13 @@ Ditulis 14 Agustus 2026, di akhir Langkah 13 rencana Tahap 1
 hasil menjalankan ULANG seluruh skrip dari **skema database yang benar-benar
 kosong** (bukan cuma "pernah lulus sekali") — lihat §5.
 
+> **Koreksi 15 Agu 2026 (Tahap 2, Langkah 5):** `templates.cover_asset_id`
+> yang ditulis `NOT NULL` di bawah ternyata salah baca dok 03 §3.2 — dok
+> 04 §4.4 eksplisit menyebut "Sampul terisi" sebagai GERBANG PENERBITAN,
+> bukan syarat tabel. Migrasi `0007_templates_cover_nullable.sql`
+> mencabut `NOT NULL` itu; "wajib" sekarang ditegakkan
+> `lib/services/templatePublishGate.ts`, bukan constraint DB.
+
 ---
 
 ## 1. Tabel yang ada sekarang (17)

@@ -50,6 +50,20 @@
       "when": 1786706915357,
       "tag": "0006_commercial_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1786732095827,
+      "tag": "0007_templates_cover_nullable",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1786734015231,
+      "tag": "0008_templates_previewed_at",
+      "breakpoints": true
     }
   ]
 }

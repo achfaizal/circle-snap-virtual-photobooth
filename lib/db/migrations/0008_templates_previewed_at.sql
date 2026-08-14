@@ -1,0 +1,1 @@
+ALTER TABLE "templates" ADD COLUMN "previewed_at" timestamp with time zone;

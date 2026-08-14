@@ -1,0 +1,1 @@
+ALTER TABLE "templates" ALTER COLUMN "cover_asset_id" DROP NOT NULL;

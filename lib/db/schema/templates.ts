@@ -130,9 +130,12 @@ export const templates = pgTable("templates", {
   tagline: varchar("tagline", { length: 140 }),
   description: text("description"),
   folder: varchar("folder", { length: 80 }).notNull(),
-  coverAssetId: uuid("cover_asset_id")
-    .notNull()
-    .references(() => assets.id),
+  // NULLABLE — koreksi dari Tahap 1 (awalnya notNull, dok 03 §3.2
+  // menandai "✔"). dok 04 §4.4 eksplisit: "Sampul terisi" adalah GERBANG
+  // PENERBITAN poin ke-2, bukan syarat tabel — draft boleh belum punya
+  // sampul, baru wajib saat terbit (lib/services/templatePublishGate.ts,
+  // Langkah 7 rencana Tahap 2). Ditemukan & diperbaiki 15 Agu 2026.
+  coverAssetId: uuid("cover_asset_id").references(() => assets.id),
   previewAssetIds: uuid("preview_asset_ids").array(),
   brandLabel: varchar("brand_label", { length: 40 }).notNull(),
   // 9 token wajib: ink, film, edge, smoke, paper, flash, live,
@@ -149,6 +152,11 @@ export const templates = pgTable("templates", {
   sampleData: jsonb("sample_data").notNull(),
   defaultSessionConfig: jsonb("default_session_config").notNull(),
   version: integer("version").notNull().default(1),
+  // Di luar dok 03 §3.2 — dibutuhkan gerbang penerbitan poin ke-8 (dok
+  // 04 §4.4: "Pratinjau tamu sudah dijalankan minimal sekali"). Murni
+  // pelacakan alur kerja admin, bukan data acara/klien — tidak melalui
+  // proses tanya-dulu seperti frames.blurb (itu data tamu, ini bukan).
+  previewedAt: timestamp("previewed_at", { withTimezone: true }),
   status: templateStatusEnum("status").notNull().default("draft"),
   publishedAt: timestamp("published_at", { withTimezone: true }),
   usageCount: integer("usage_count").notNull().default(0),
