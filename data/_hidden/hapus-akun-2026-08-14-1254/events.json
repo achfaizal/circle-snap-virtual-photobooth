@@ -1,0 +1,87 @@
+[
+  {
+    "clientId": "cli_570d5efb-ea96-4728-9f19-c4370664b87b",
+    "slug": "a",
+    "status": "draft",
+    "identity": {
+      "internalName": "a",
+      "kind": "wedding",
+      "brandLabel": "Happy Wedding",
+      "names": "a",
+      "date": "2026-08-14",
+      "dateDisplay": "14 Agustus 2026",
+      "venue": "",
+      "hashtag": "",
+      "greeting": "Terima kasih sudah datang di hari bahagia kami. Ambil foto sepuasnya, lalu titip pesan suara untuk kami."
+    },
+    "frameIds": [],
+    "theme": {
+      "preset": "polos",
+      "colors": {
+        "ink": "#FFFFFF",
+        "film": "#F4F4F5",
+        "edge": "#D4D4D8",
+        "smoke": "#52525B",
+        "paper": "#18181B",
+        "flash": "#3F3F46",
+        "live": "#DC2626",
+        "brandPurple": "#27272A",
+        "brandGold": "#52525B"
+      },
+      "fontDisplayId": "playfair",
+      "fontMonoId": "space-mono",
+      "effects": {
+        "petals": {
+          "enabled": false,
+          "count": 0
+        },
+        "blobs": false,
+        "confetti": false,
+        "bokeh": false,
+        "sparkle": false
+      },
+      "videoCard": {
+        "bg": "#FFFFFF",
+        "ink": "#1A1610",
+        "smoke": "#8A8478",
+        "waveActive": "#EC4899",
+        "waveTrack": "#E7E2D8",
+        "headingGradient": [
+          "#7C3AED",
+          "#EC4899",
+          "#F59E0B"
+        ]
+      }
+    },
+    "session": {
+      "countdownSeconds": 3,
+      "autoContinue": true,
+      "mirror": true,
+      "maxRetakes": 3,
+      "revealMs": 15000,
+      "filterCss": "brightness(1.08) contrast(1.04) saturate(1.12)",
+      "cameraAspect": "1:1",
+      "guestNameRequired": true,
+      "voice": {
+        "enabled": true,
+        "maxSeconds": 15
+      },
+      "moments": {
+        "enabled": true,
+        "showGuestName": true
+      },
+      "share": {
+        "instagram": true,
+        "whatsapp": true,
+        "nativeShare": true,
+        "downloadPng": true,
+        "downloadJpg": true,
+        "downloadVideo": true
+      }
+    },
+    "copy": {},
+    "id": "evt_7ee84ba2-d8e5-4a33-9e89-9210423af463",
+    "createdAt": "2026-08-14T03:54:06.464Z",
+    "updatedAt": "2026-08-14T03:54:06.464Z"
+  }
+]

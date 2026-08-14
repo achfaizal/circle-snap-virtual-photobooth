@@ -3,7 +3,6 @@
 import { useEffect, useRef } from "react";
 import { compose } from "@/lib/compositor";
 import { tokensFor } from "@/lib/event";
-import { getFilter } from "@/lib/filters";
 import { useSession } from "@/lib/store";
 
 /**
@@ -35,7 +34,7 @@ export default function StripCanvas({
   natural?: boolean;
 }) {
   const holder = useRef<HTMLDivElement>(null);
-  const { template, frames, filterId, mirror, event } = useSession();
+  const { template, frames, mirror, event, filterCss } = useSession();
 
   useEffect(() => {
     if (!template || !event || !holder.current) return;
@@ -45,7 +44,7 @@ export default function StripCanvas({
       const canvas = await compose({
         template,
         frames,
-        filterCss: getFilter(filterId).css,
+        filterCss,
         mirror,
         tokens: tokensFor(event),
         scale,
@@ -62,7 +61,7 @@ export default function StripCanvas({
     return () => {
       dead = true;
     };
-  }, [template, frames, filterId, mirror, event, scale, fill, natural, className]);
+  }, [template, frames, mirror, event, filterCss, scale, fill, natural, className]);
 
   return <div ref={holder} className={natural ? "contents" : className} />;
 }

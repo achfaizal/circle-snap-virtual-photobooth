@@ -1,0 +1,190 @@
+[
+  {
+    "id": "frm_sal_s1",
+    "clientId": null,
+    "name": "Dua Foto Elegan",
+    "blurb": "Dua jepretan besar dalam bingkai floral merah marun & emas.",
+    "width": 800,
+    "height": 1966,
+    "printSize": "2.7 × 6.6\"",
+    "overlayAssetId": "ast_sal_s1",
+    "paper": "#45030A",
+    "slots": [
+      { "x": 96, "y": 99, "w": 620, "h": 747 },
+      { "x": 96, "y": 873, "w": 620, "h": 671 }
+    ],
+    "textLayers": [],
+    "slotSource": "manual",
+    "createdAt": "2026-07-31T17:07:00.000Z",
+    "updatedAt": "2026-07-31T17:07:00.000Z"
+  },
+  {
+    "id": "frm_sal_s2",
+    "clientId": null,
+    "name": "Tiga Foto Elegan",
+    "blurb": "Tiga jepretan berjajar, bingkai floral merah marun & emas.",
+    "width": 800,
+    "height": 1966,
+    "printSize": "2.7 × 6.6\"",
+    "overlayAssetId": "ast_sal_s2",
+    "paper": "#3C0A0F",
+    "slots": [
+      { "x": 75, "y": 350, "w": 649, "h": 404 },
+      { "x": 75, "y": 796, "w": 649, "h": 403 },
+      { "x": 75, "y": 1241, "w": 649, "h": 367 }
+    ],
+    "textLayers": [],
+    "slotSource": "manual",
+    "createdAt": "2026-07-31T17:07:00.000Z",
+    "updatedAt": "2026-07-31T17:07:00.000Z"
+  },
+  {
+    "id": "frm_sal_s3",
+    "clientId": null,
+    "name": "Lengkung Floral",
+    "blurb": "Satu foto besar di bingkai lengkung penuh rangkaian bunga.",
+    "width": 954,
+    "height": 1648,
+    "printSize": "3.2 × 5.5\"",
+    "overlayAssetId": "ast_sal_s3",
+    "paper": "#641E1D",
+    "slots": [{ "x": 127, "y": 138, "w": 699, "h": 1088 }],
+    "textLayers": [],
+    "slotSource": "manual",
+    "createdAt": "2026-07-31T17:07:00.000Z",
+    "updatedAt": "2026-07-31T17:07:00.000Z"
+  },
+  {
+    "id": "frm_sal_s4",
+    "clientId": null,
+    "name": "Tiga Foto Peony",
+    "blurb": "Tiga jepretan landscape dikelilingi rangkaian peony dan bunga liar lembut.",
+    "width": 941,
+    "height": 1672,
+    "printSize": "3.2 × 5.6\"",
+    "overlayAssetId": "ast_sal_s4",
+    "paper": "#FDFEFD",
+    "slots": [
+      { "x": 130, "y": 114, "w": 693, "h": 385 },
+      { "x": 130, "y": 528, "w": 693, "h": 386 },
+      { "x": 130, "y": 944, "w": 694, "h": 361 }
+    ],
+    "textLayers": [],
+    "slotSource": "auto",
+    "createdAt": "2026-07-31T17:07:00.000Z",
+    "updatedAt": "2026-07-31T17:07:00.000Z"
+  },
+  {
+    "id": "frm_sal_s5",
+    "clientId": null,
+    "name": "Dua Foto Anemone",
+    "blurb": "Dua jepretan besar berbingkai anemone putih dan bunga peach yang syahdu.",
+    "width": 941,
+    "height": 1672,
+    "printSize": "3.2 × 5.6\"",
+    "overlayAssetId": "ast_sal_s5",
+    "paper": "#FCFAFA",
+    "slots": [
+      { "x": 117, "y": 112, "w": 708, "h": 579 },
+      { "x": 117, "y": 719, "w": 708, "h": 543 }
+    ],
+    "textLayers": [],
+    "slotSource": "auto",
+    "createdAt": "2026-07-31T17:07:00.000Z",
+    "updatedAt": "2026-07-31T17:07:00.000Z"
+  },
+  {
+    "id": "frm_sal_s6",
+    "clientId": null,
+    "name": "Dua Foto Mawar",
+    "blurb": "Dua jepretan hangat dalam bingkai mawar pink bersudut membulat.",
+    "width": 941,
+    "height": 1672,
+    "printSize": "3.2 × 5.6\"",
+    "overlayAssetId": "ast_sal_s6",
+    "paper": "#FEE9E5",
+    "slots": [
+      { "x": 119, "y": 169, "w": 704, "h": 463 },
+      { "x": 119, "y": 715, "w": 704, "h": 457 }
+    ],
+    "textLayers": [],
+    "slotSource": "auto",
+    "createdAt": "2026-07-31T17:07:00.000Z",
+    "updatedAt": "2026-07-31T17:07:00.000Z"
+  },
+  {
+    "id": "frm_sal_s7",
+    "clientId": null,
+    "name": "Tiga Foto Pita",
+    "blurb": "Tiga jepretan manis dihiasi pita-pita pink yang playful.",
+    "width": 941,
+    "height": 1672,
+    "printSize": "3.2 × 5.6\"",
+    "overlayAssetId": "ast_sal_s7",
+    "paper": "#FDF3EB",
+    "slots": [
+      { "x": 189, "y": 214, "w": 575, "h": 336 },
+      { "x": 189, "y": 581, "w": 575, "h": 333 },
+      { "x": 189, "y": 946, "w": 576, "h": 313 }
+    ],
+    "textLayers": [],
+    "slotSource": "auto",
+    "createdAt": "2026-07-31T17:07:00.000Z",
+    "updatedAt": "2026-07-31T17:07:00.000Z"
+  },
+  {
+    "id": "frm_eng_1",
+    "clientId": null,
+    "name": "Satu Foto Botanical",
+    "blurb": "Satu foto besar bergaya botanical garis emas, cocok untuk potret utuh.",
+    "width": 1080,
+    "height": 1920,
+    "printSize": "3.6 × 6.5\"",
+    "overlayAssetId": "ast_eng_1",
+    "paper": "#F3F3E9",
+    "slots": [{ "x": 367, "y": 629, "w": 645, "h": 942 }],
+    "textLayers": [],
+    "slotSource": "auto",
+    "createdAt": "2026-08-08T11:43:00.000Z",
+    "updatedAt": "2026-08-08T11:43:00.000Z"
+  },
+  {
+    "id": "frm_eng_2",
+    "clientId": null,
+    "name": "Tiga Foto Botanical",
+    "blurb": "Tiga jepretan berjajar dengan aksen bunga garis emas dan label \"luxury\" / \"love\".",
+    "width": 800,
+    "height": 1966,
+    "printSize": "2.7 × 6.6\"",
+    "overlayAssetId": "ast_eng_2",
+    "paper": "#F3F3E9",
+    "slots": [
+      { "x": 119, "y": 396, "w": 567, "h": 379 },
+      { "x": 113, "y": 915, "w": 567, "h": 379 },
+      { "x": 113, "y": 1421, "w": 567, "h": 379 }
+    ],
+    "textLayers": [],
+    "slotSource": "auto",
+    "createdAt": "2026-08-08T11:53:00.000Z",
+    "updatedAt": "2026-08-08T11:53:00.000Z"
+  },
+  {
+    "id": "frm_eng_3",
+    "clientId": null,
+    "name": "Dua Foto Botanical",
+    "blurb": "Dua jepretan besar dengan tanggal di atas dan tanda tangan \"Sal & Sal\" di bawah.",
+    "width": 800,
+    "height": 1966,
+    "printSize": "2.7 × 6.6\"",
+    "overlayAssetId": "ast_eng_3",
+    "paper": "#F3F3E9",
+    "slots": [
+      { "x": 101, "y": 230, "w": 607, "h": 682 },
+      { "x": 110, "y": 1027, "w": 589, "h": 694 }
+    ],
+    "textLayers": [],
+    "slotSource": "auto",
+    "createdAt": "2026-08-08T12:09:00.000Z",
+    "updatedAt": "2026-08-08T12:09:00.000Z"
+  }
+]

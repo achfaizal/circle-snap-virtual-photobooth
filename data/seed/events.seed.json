@@ -1,0 +1,148 @@
+[
+  {
+    "id": "evt_wedding_salma_faizal",
+    "clientId": "cli_demo",
+    "slug": "salma-faizal",
+    "status": "ended",
+    "identity": {
+      "internalName": "Wedding Salma & Faizal",
+      "brandLabel": "Happy Wedding",
+      "names": "Salma & Faizal",
+      "date": "2027-04-04",
+      "dateDisplay": "4 April 2027",
+      "venue": "Gedung Pernikahan",
+      "hashtag": "#SalmaFaizal",
+      "greeting": "Terima kasih sudah datang di pernikahan kami. Ambil foto sebanyak yang kamu mau, lalu titip pesan suara untuk kami."
+    },
+    "frameIds": [
+      "frm_sal_s1", "frm_sal_s2", "frm_sal_s3", "frm_sal_s4",
+      "frm_sal_s5", "frm_sal_s6", "frm_sal_s7"
+    ],
+    "theme": {
+      "preset": "dark",
+      "colors": {
+        "ink": "#2B0508",
+        "film": "#3A0A10",
+        "edge": "#8C6A3F",
+        "smoke": "#D9BE95",
+        "paper": "#FDF6EC",
+        "flash": "#C9A66B",
+        "live": "#C0392B",
+        "brandPurple": "#5C1220",
+        "brandGold": "#C9A66B"
+      },
+      "fontDisplayId": "playfair",
+      "fontMonoId": "space-mono",
+      "decorAssetId": "ast_sal_decor",
+      "effects": {
+        "petals": { "enabled": true, "count": 7 },
+        "blobs": true,
+        "confetti": true
+      },
+      "videoCard": {
+        "bg": "#FFFFFF",
+        "ink": "#1A1610",
+        "smoke": "#8A8478",
+        "waveActive": "#EC4899",
+        "waveTrack": "#E7E2D8",
+        "headingGradient": ["#7C3AED", "#EC4899", "#F59E0B"]
+      }
+    },
+    "session": {
+      "countdownSeconds": 3,
+      "autoContinue": true,
+      "mirror": true,
+      "maxRetakes": 3,
+      "revealMs": 15000,
+      "filterCss": "brightness(1.08) contrast(1.04) saturate(1.12)",
+      "cameraAspect": "1:1",
+      "guestNameRequired": true,
+      "voice": { "enabled": true, "maxSeconds": 15 },
+      "moments": { "enabled": true, "showGuestName": true },
+      "share": {
+        "instagram": true,
+        "whatsapp": true,
+        "nativeShare": true,
+        "downloadPng": true,
+        "downloadJpg": true,
+        "downloadVideo": true
+      }
+    },
+    "copy": {},
+    "createdAt": "2026-07-31T00:00:00.000Z",
+    "updatedAt": "2026-08-08T00:00:00.000Z",
+    "publishedAt": "2026-07-31T00:00:00.000Z"
+  },
+  {
+    "id": "evt_engagement_salfaizal",
+    "clientId": "cli_demo",
+    "slug": "engagement-salfaizal",
+    "status": "live",
+    "identity": {
+      "internalName": "Lamaran Salma & Faizal",
+      "brandLabel": "Happy Engagement",
+      "names": "Salma & Faizal",
+      "date": "2026-08-08",
+      "dateDisplay": "8 Agustus 2026",
+      "venue": "Gedung Pernikahan",
+      "hashtag": "#SalmaFaizal",
+      "greeting": "Terima kasih sudah datang di acara lamaran kami. Ambil foto sebanyak yang kamu mau, lalu titip pesan suara untuk kami."
+    },
+    "frameIds": ["frm_eng_1", "frm_eng_2", "frm_eng_3"],
+    "theme": {
+      "preset": "light",
+      "colors": {
+        "ink": "#F3F3E9",
+        "film": "#EAE7D8",
+        "edge": "#C9B78A",
+        "smoke": "#6B5D3F",
+        "paper": "#2E2A1E",
+        "flash": "#A98D4A",
+        "live": "#A63B2E",
+        "brandPurple": "#7A5E28",
+        "brandGold": "#D8C08A"
+      },
+      "fontDisplayId": "playfair",
+      "fontMonoId": "space-mono",
+      "decorAssetId": "ast_eng_decor",
+      "videoBgAssetId": "ast_eng_video_bg",
+      "effects": {
+        "petals": { "enabled": true, "count": 7 },
+        "blobs": true,
+        "confetti": true
+      },
+      "videoCard": {
+        "bg": "#FFFFFF",
+        "ink": "#1A1610",
+        "smoke": "#8A8478",
+        "waveActive": "#EC4899",
+        "waveTrack": "#E7E2D8",
+        "headingGradient": ["#7C3AED", "#EC4899", "#F59E0B"]
+      }
+    },
+    "session": {
+      "countdownSeconds": 3,
+      "autoContinue": true,
+      "mirror": true,
+      "maxRetakes": 3,
+      "revealMs": 15000,
+      "filterCss": "brightness(1.08) contrast(1.04) saturate(1.12)",
+      "cameraAspect": "1:1",
+      "guestNameRequired": true,
+      "voice": { "enabled": true, "maxSeconds": 15 },
+      "moments": { "enabled": true, "showGuestName": true },
+      "share": {
+        "instagram": true,
+        "whatsapp": true,
+        "nativeShare": true,
+        "downloadPng": true,
+        "downloadJpg": true,
+        "downloadVideo": true
+      }
+    },
+    "copy": {},
+    "createdAt": "2026-08-08T00:00:00.000Z",
+    "updatedAt": "2026-08-10T00:00:00.000Z",
+    "publishedAt": "2026-08-08T00:00:00.000Z"
+  }
+]

@@ -1,0 +1,13 @@
+[
+  {
+    "clientId": "cli_dee7682a-fe2a-4499-8bb6-3fea26148567",
+    "kind": "add_event_slot",
+    "amount": 1,
+    "priceIdr": 399000,
+    "method": "manual_transfer",
+    "id": "ord_a62ec25e-d123-4d36-89aa-8b3b4b875a1d",
+    "status": "paid",
+    "createdAt": "2026-08-12T11:20:43.592Z",
+    "paidAt": "2026-08-12T11:20:46.842Z"
+  }
+]

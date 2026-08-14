@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   closeCamera,
   describe,
@@ -10,7 +11,6 @@ import {
   type Facing,
 } from "@/lib/camera";
 import { captureFrame, coverRect } from "@/lib/compositor";
-import { getFilter } from "@/lib/filters";
 import { useSession } from "@/lib/store";
 import type { Slot, Template } from "@/lib/templates";
 import FrameAssembly from "./FrameAssembly";
@@ -165,7 +165,17 @@ function ShotPreview({
   filterCss: string;
   onClose: () => void;
 }) {
-  return (
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  // Section langkah ini punya animasi masuk (step-enter) yang meninggalkan
+  // `transform` terpasang permanen (fill-mode both) — itu diam-diam bikin
+  // "containing block" baru untuk descendant position:fixed, jadi overlay
+  // ini bisa kejebak di dalam kotak section alih-alih menutupi seluruh
+  // layar. Portal ke document.body melewati masalah itu.
+  if (!mounted) return null;
+
+  return createPortal(
     <div
       className="fixed inset-0 z-50 grid place-items-center bg-ink/90 p-6"
       onClick={onClose}
@@ -186,7 +196,8 @@ function ShotPreview({
           <X className="h-4 w-4" />
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -221,10 +232,11 @@ export default function StepShoot() {
     template,
     frames,
     cursor,
-    filterId,
     mirror,
     countdownFrom,
     shooting,
+    filterCss,
+    cameraAspect,
     pushFrame,
     retakeAt,
     canRetake,
@@ -232,7 +244,6 @@ export default function StepShoot() {
     goto,
   } = useSession();
 
-  const filter = getFilter(filterId);
   const filled = frames.filter(Boolean).length;
   const complete = template ? filled === template.slots.length : false;
 
@@ -368,7 +379,7 @@ export default function StepShoot() {
         className={`relative mx-auto w-[80%] max-w-xs overflow-hidden rounded-2xl bg-black ring-1 ring-edge sm:max-w-sm ${
           reviewing ? "hidden" : ""
         }`}
-        style={{ aspectRatio: "1 / 1" }}
+        style={{ aspectRatio: cameraAspect.replace(":", " / ") }}
       >
         <video
           ref={videoRef}
@@ -377,7 +388,7 @@ export default function StepShoot() {
           autoPlay
           className="absolute inset-0 h-full w-full object-cover"
           style={{
-            filter: filter.css,
+            filter: filterCss,
             transform: mirror ? "scaleX(-1)" : undefined,
             opacity: showVideo ? 1 : 0,
             transition: "opacity 150ms",
@@ -404,7 +415,7 @@ export default function StepShoot() {
               <p className="mt-3 text-sm leading-relaxed text-smoke">{error}</p>
               <button
                 onClick={() => setAttempt((a) => a + 1)}
-                className="btn-primary mt-6 rounded-full px-5 py-2.5 text-sm font-medium text-ink"
+                className="btn-primary btn-shape mt-6 rounded-full px-5 py-2.5 text-sm font-medium text-ink"
               >
                 Coba lagi
               </button>
@@ -446,7 +457,7 @@ export default function StepShoot() {
                     slot={slot}
                     template={template}
                     mirror={mirror}
-                    filterCss={filter.css}
+                    filterCss={filterCss}
                   />
                 )
             )}
@@ -531,7 +542,7 @@ export default function StepShoot() {
         <ShotPreview
           bitmap={frames[previewIndex]!}
           mirror={mirror}
-          filterCss={filter.css}
+          filterCss={filterCss}
           onClose={() => setPreviewIndex(null)}
         />
       )}

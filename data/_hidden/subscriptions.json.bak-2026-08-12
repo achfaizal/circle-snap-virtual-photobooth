@@ -1,0 +1,200 @@
+[
+  {
+    "id": "sub_wedding",
+    "clientId": "cli_demo",
+    "eventId": "evt_wedding_salma_faizal",
+    "planId": "plan_seed_legacy",
+    "stripQuota": 200,
+    "maxFrames": 7,
+    "maxVoiceSeconds": 15,
+    "storageMb": 500,
+    "features": {
+      "voiceNote": true,
+      "momentsGallery": true,
+      "bulkDownload": false,
+      "removeCircleSnapBranding": false,
+      "customFrameUpload": true
+    },
+    "stripUsed": 7,
+    "storageUsedMb": 0,
+    "status": "expired",
+    "startsAt": "2026-07-31T00:00:00.000Z",
+    "expiresAt": "2027-05-04T00:00:00.000Z"
+  },
+  {
+    "id": "sub_engagement",
+    "clientId": "cli_demo",
+    "eventId": "evt_engagement_salfaizal",
+    "planId": "plan_seed_legacy",
+    "stripQuota": 200,
+    "maxFrames": 3,
+    "maxVoiceSeconds": 15,
+    "storageMb": 500,
+    "features": {
+      "voiceNote": true,
+      "momentsGallery": true,
+      "bulkDownload": false,
+      "removeCircleSnapBranding": false,
+      "customFrameUpload": true
+    },
+    "stripUsed": 3,
+    "storageUsedMb": 0,
+    "status": "active",
+    "startsAt": "2026-08-08T00:00:00.000Z",
+    "expiresAt": "2026-09-07T00:00:00.000Z"
+  },
+  {
+    "clientId": "cli_demo",
+    "eventId": "evt_11228f0e-88e1-4160-8290-22f9c71def8d",
+    "planId": "starter-manual",
+    "stripQuota": 100,
+    "maxFrames": 10,
+    "maxVoiceSeconds": 15,
+    "storageMb": 500,
+    "features": {
+      "voiceNote": true,
+      "momentsGallery": true,
+      "bulkDownload": false,
+      "removeCircleSnapBranding": false,
+      "customFrameUpload": true
+    },
+    "stripUsed": 0,
+    "storageUsedMb": 0,
+    "status": "active",
+    "startsAt": "2026-08-10T15:26:39.173Z",
+    "expiresAt": "2026-11-08T15:26:39.173Z",
+    "id": "sub_36fe2fa7-7a79-4d41-b455-35c6ea74de91"
+  },
+  {
+    "clientId": "cli_demo",
+    "eventId": "evt_60e4a214-116f-424c-9283-aa2d7cbd3c3a",
+    "planId": "starter-manual",
+    "stripQuota": 100,
+    "maxFrames": 10,
+    "maxVoiceSeconds": 15,
+    "storageMb": 500,
+    "features": {
+      "voiceNote": true,
+      "momentsGallery": true,
+      "bulkDownload": false,
+      "removeCircleSnapBranding": false,
+      "customFrameUpload": true
+    },
+    "stripUsed": 0,
+    "storageUsedMb": 0,
+    "status": "active",
+    "startsAt": "2026-08-10T15:31:35.204Z",
+    "expiresAt": "2026-11-08T15:31:35.204Z",
+    "id": "sub_0380d32b-07ad-49d4-9208-ba4615458f61"
+  },
+  {
+    "clientId": "cli_demo",
+    "eventId": "evt_9423fa3a-fada-4860-a019-26b4279e2ef5",
+    "planId": "starter-manual",
+    "stripQuota": 100,
+    "maxFrames": 10,
+    "maxVoiceSeconds": 15,
+    "storageMb": 500,
+    "features": {
+      "voiceNote": true,
+      "momentsGallery": true,
+      "bulkDownload": false,
+      "removeCircleSnapBranding": false,
+      "customFrameUpload": true
+    },
+    "stripUsed": 0,
+    "storageUsedMb": 0,
+    "status": "active",
+    "startsAt": "2026-08-11T09:06:16.013Z",
+    "expiresAt": "2026-11-09T09:06:16.013Z",
+    "id": "sub_248e181a-349a-45c2-bd71-bce1c4dd943b"
+  },
+  {
+    "clientId": "cli_demo",
+    "eventId": "evt_0d756958-8b75-4c71-b36d-c7e243136717",
+    "planId": "starter-manual",
+    "stripQuota": 100,
+    "maxFrames": 10,
+    "maxVoiceSeconds": 15,
+    "storageMb": 500,
+    "features": {
+      "voiceNote": true,
+      "momentsGallery": true,
+      "bulkDownload": false,
+      "removeCircleSnapBranding": false,
+      "customFrameUpload": true
+    },
+    "stripUsed": 0,
+    "storageUsedMb": 0,
+    "status": "active",
+    "startsAt": "2026-08-11T11:19:00.781Z",
+    "expiresAt": "2026-11-09T11:19:00.781Z",
+    "id": "sub_0f757f31-62d2-460c-bfa0-2947a69ed579"
+  },
+  {
+    "clientId": "cli_demo",
+    "eventId": "evt_2b0c564f-e5cb-4588-9be8-51216dd93217",
+    "planId": "starter-manual",
+    "stripQuota": 100,
+    "maxFrames": 10,
+    "maxVoiceSeconds": 15,
+    "storageMb": 500,
+    "features": {
+      "voiceNote": true,
+      "momentsGallery": true,
+      "bulkDownload": false,
+      "removeCircleSnapBranding": false,
+      "customFrameUpload": true
+    },
+    "stripUsed": 0,
+    "storageUsedMb": 0,
+    "status": "active",
+    "startsAt": "2026-08-11T11:41:41.770Z",
+    "expiresAt": "2026-11-09T11:41:41.770Z",
+    "id": "sub_6fb6e7b2-d326-4f9f-9250-993543ce7169"
+  },
+  {
+    "clientId": "cli_demo",
+    "eventId": "evt_861faa14-1d1e-4ca1-bee7-3360d9937ede",
+    "planId": "starter-manual",
+    "stripQuota": 100,
+    "maxFrames": 10,
+    "maxVoiceSeconds": 15,
+    "storageMb": 500,
+    "features": {
+      "voiceNote": true,
+      "momentsGallery": true,
+      "bulkDownload": false,
+      "removeCircleSnapBranding": false,
+      "customFrameUpload": true
+    },
+    "stripUsed": 0,
+    "storageUsedMb": 0,
+    "status": "active",
+    "startsAt": "2026-08-11T11:48:37.777Z",
+    "expiresAt": "2026-11-09T11:48:37.777Z",
+    "id": "sub_29e0a8be-8e6d-4818-8aa0-f7e6720be5a3"
+  },
+  {
+    "clientId": "cli_demo",
+    "eventId": "evt_33580ce2-fee7-4d2a-88d0-8ddb9227eee9",
+    "planId": "starter-manual",
+    "stripQuota": 100,
+    "maxFrames": 10,
+    "maxVoiceSeconds": 15,
+    "storageMb": 500,
+    "features": {
+      "voiceNote": true,
+      "momentsGallery": true,
+      "bulkDownload": false,
+      "removeCircleSnapBranding": false,
+      "customFrameUpload": true
+    },
+    "stripUsed": 0,
+    "storageUsedMb": 0,
+    "status": "active",
+    "startsAt": "2026-08-12T03:16:24.991Z",
+    "expiresAt": "2026-11-10T03:16:24.991Z",
+    "id": "sub_26ffb524-45a8-4f1d-afcf-03dca52657d0"
+  }
+]

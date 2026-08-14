@@ -24,9 +24,7 @@
   --color-live: #ef4444;
 
   --color-brand-purple: #7c3aed;
-  --color-brand-violet: #5b21b6;
   --color-brand-gold: #f59e0b;
-  --color-brand-gold-deep: #c9a84c;
 
   --font-display: var(--font-jakarta), ui-sans-serif, system-ui;
   --font-sans: var(--font-jakarta), ui-sans-serif, system-ui;
@@ -44,7 +42,31 @@ body {
 }
 
 body {
+  /* Default seluruh app (playground tamu) — TETAP Jakarta, bukan Poppins.
+     .admin-root (di bawah) meng-override ini khusus area admin, jangan
+     ikut diubah ke Poppins di sini walau tokennya sekarang sama-sama
+     dimuat lewat app/layout.tsx (Fase E playground belum jalan, lihat
+     docs/blueprint/08-adopsi-desain-vlass.md). */
   font-family: var(--font-sans);
+}
+
+/* Browser (autofill nama, dari isian sebelumnya) melukis kotak putih
+   sendiri lewat stylesheet internalnya sendiri, menimpa bg-transparent
+   yang kita set — box-shadow inset raksasa dengan warna latar TEMA
+   AKTIF (bukan warna tetap) "menutupi" cat putih itu dari atas, karena
+   box-shadow dirender di atas cat asli elemen. -webkit-text-fill-color
+   dipakai karena autofill juga memaksa warna teks jadi hitam, bukan
+   cuma warna latar. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:autofill {
+  -webkit-text-fill-color: var(--color-paper);
+  -webkit-box-shadow: 0 0 0px 1000px var(--color-ink) inset;
+  box-shadow: 0 0 0px 1000px var(--color-ink) inset;
+  caret-color: var(--color-paper);
+  font-family: var(--font-display);
+  transition: background-color 9999s ease-in-out 0s;
 }
 
 /* Grain halus — meniru butir film, bukan tekstur dekoratif. Sangat tipis
@@ -69,10 +91,6 @@ body::before {
    merek: wordmark, tombol utama, dan sorotan teks. */
 .brand-gradient {
   background: linear-gradient(135deg, var(--color-brand-purple), var(--color-flash));
-}
-
-.brand-gradient-gold {
-  background: linear-gradient(135deg, var(--color-brand-gold), var(--color-brand-gold-deep));
 }
 
 .text-brand-gradient {
@@ -118,6 +136,18 @@ body::before {
 .btn-primary:disabled {
   background: var(--color-edge);
   box-shadow: none;
+}
+
+/* Bentuk tombol lebar — diatur klien di Visual Builder (Selamat Datang →
+   Tombol) dan dikirim EventBooth sebagai --booth-btn-radius. Sengaja kelas
+   TERPISAH dari .btn-primary: shutter kamera juga .btn-primary tapi harus
+   tetap bundar apa pun pilihan kliennya.
+
+   Aturan ini tidak berlapis (@layer), jadi ia menang atas `rounded-full`
+   dari Tailwind yang ada di layer utilities — itulah cara satu pilihan
+   klien bisa menimpa puluhan kelas utilitas tanpa menyentuh satu per satu. */
+.btn-shape {
+  border-radius: var(--booth-btn-radius, 9999px);
 }
 
 /* --- LATAR AMBIEN -----------------------------------------------------------
@@ -175,6 +205,76 @@ body::before {
   border-radius: 0 60% 0 60%;
   animation: petal-fall linear infinite;
   pointer-events: none;
+}
+
+/* --- BOKEH ---------------------------------------------------------------
+   Bulatan cahaya buram yang naik pelan dari bawah — meniru bokeh lensa
+   kamera, jadi terasa nyambung dengan tema photobooth. Sengaja BUKAN
+   sekadar blob statis: yang ini bergerak vertikal dan mengecil, jadi
+   layar terasa hidup tanpa mengganggu keterbacaan teks di atasnya. */
+@keyframes bokeh-rise {
+  0% {
+    transform: translateY(0) scale(0.6);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.5;
+  }
+  85% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: translateY(-115vh) scale(1.15);
+    opacity: 0;
+  }
+}
+.bokeh {
+  position: absolute;
+  bottom: -18vh;
+  border-radius: 9999px;
+  filter: blur(14px);
+  animation: bokeh-rise linear infinite;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* --- KILAU ---------------------------------------------------------------
+   Bintik kecil yang berdenyut pelan. Jauh lebih tenang daripada konfeti
+   (yang sekali jalan saat struk keluar) — ini aksen latar yang boleh
+   menyala terus tanpa bikin mata lelah. */
+@keyframes sparkle-twinkle {
+  0%,
+  100% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+}
+.sparkle {
+  position: absolute;
+  border-radius: 9999px;
+  animation: sparkle-twinkle ease-in-out infinite;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* Hormati "kurangi gerakan" di OS tamu — animasi ambien murni hiasan,
+   tidak ada informasi yang hilang kalau dimatikan. */
+@media (prefers-reduced-motion: reduce) {
+  .petal,
+  .bokeh,
+  .sparkle,
+  .floating,
+  .floating-slow {
+    animation: none;
+  }
+  .bokeh,
+  .sparkle {
+    opacity: 0.25;
+  }
 }
 
 /* --- ELEMEN TANDA TANGAN -------------------------------------------------
@@ -290,24 +390,6 @@ body::before {
   pointer-events: none;
 }
 
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-.shimmer-text {
-  background: linear-gradient(
-    90deg,
-    var(--color-smoke) 0%,
-    var(--color-paper) 50%,
-    var(--color-smoke) 100%
-  );
-  background-size: 200% 100%;
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  animation: shimmer 2.4s linear infinite;
-}
-
 /* --- TRANSISI ANTAR-LANGKAH ------------------------------------------------
    Tiap kali `step` berpindah (bingkai -> potret -> suara -> struk), komponen
    baru masuk lewat fade + naik tipis. Konsisten dipakai di root <section>
@@ -349,6 +431,21 @@ body::before {
   outline-offset: 3px;
 }
 
+/* Input nama tamu: sengaja TIDAK pakai outline kotak fokus di atas —
+   underline yang berubah warna (focus:border-flash di WelcomeScreen)
+   sudah cukup jadi penanda fokusnya, kotak di sekeliling terasa berat
+   untuk field sekecil ini. Class Tailwind `focus-visible:outline-none`
+   TIDAK cukup di sini: aturan `:focus-visible` di atas ditulis polos
+   (di luar `@layer`), dan lewat CSS Cascade Layers, style TANPA layer
+   selalu menang atas utility Tailwind manapun (yang ada di dalam
+   `@layer utilities`) — terlepas dari urutan atau spesifisitas. Aturan
+   ini juga sengaja ditulis polos (bukan di dalam @layer) supaya masuk
+   ke "kelompok" yang sama, sehingga spesifisitas selector-nya (class +
+   pseudo-class) yang menentukan pemenang, bukan Tailwind yang otomatis kalah. */
+.name-input:focus-visible {
+  outline: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -356,5 +453,367 @@ body::before {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* =============================================================================
+   ADMIN — identitas visual resmi Circle Snap
+   (public/logo/Circle_Snap_Brand_Guidelines_v1.0.pdf — nilai warna di bawah
+   dikutip persis dari sana, bagian 03 "Warna Brand").
+
+   Semua nama class di sini SENGAJA diprefix `admin-` — playground tamu sudah
+   punya `.btn-primary`/`.card` dst. sendiri (gelap, per-event), jadi tidak
+   boleh nama bentrok. Playground tamu belum ikut Circle Snap-kan (masih
+   token gelap lama --color-brand-purple/--color-flash di atas) — itu Fase E
+   di docs/blueprint/08-adopsi-desain-vlass.md, dikerjakan terpisah supaya
+   bisa diverifikasi bertahap.
+   ========================================================================= */
+:root {
+  /* Kutipan persis panduan brand (hlm. 5): Navy = wordmark/heading/latar
+     gelap, Blue = frame/titik/tombol utama/link, Bright Blue = hover/
+     highlight/gradient. Proporsi disarankan 60% putih/soft, 25% navy,
+     10% blue, 5% bright blue — dipegang lewat --a-clr-bg (Soft Blue) dan
+     border/text netral yang dominan, biru cuma jadi aksen. */
+  --a-clr-primary: #1976f3; /* Circle Snap Blue */
+  --a-clr-primary-dark: #0a1f44; /* Circle Snap Navy */
+  --a-clr-primary-light: #dcebff; /* Light Blue */
+  --a-clr-accent: #f59e0b;
+  --a-clr-success: #10b981;
+  --a-clr-danger: #ef4444;
+  --a-clr-warning: #f97316;
+
+  --a-clr-bg: #f4f8ff; /* Soft Blue — "Background halaman dan dokumen" */
+  --a-clr-surface: #ffffff;
+  --a-clr-border: #e4e4e7;
+  --a-clr-text: #0a1f44; /* Navy dipakai juga sebagai warna teks utama/heading */
+  --a-clr-text-muted: #71717a;
+
+  /* Skala radius PERSIS §3 UI-UX-DESIGN-SYSTEM.md — cuma 5 step ini,
+     jangan tambah angka lain. Sempat saya naikkan --a-radius-lg ke 24px
+     minggu lalu (menyamakan ke kartu grid dashboard reference yang
+     literal borderRadius:24) — ternyata itu SALAH generalisasi: 24
+     bukan token sistemik reference (`.card` dasar mereka tetap 20px),
+     dia cuma override inline khusus di kartu-kartu besar tertentu.
+     Token di sini dikembalikan ke 20 (dipakai `.admin-card` dasar);
+     kartu yang sungguh butuh 24 (grid event Dashboard, kartu Pustaka
+     Bingkai) pakai literal `borderRadius:24` inline di komponennya
+     sendiri, bukan lewat token ini — persis pola reference. */
+  --a-radius-sm: 6px;
+  --a-radius-md: 12px;
+  --a-radius-lg: 20px;
+  --a-radius-xl: 32px;
+  --a-radius-full: 9999px;
+
+  --a-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --a-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --a-shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.14);
+
+  /* Dua ujung gradasi brand — dipakai tombol utama, logo, progress bar.
+     Blue -> Bright Blue, persis kombinasi "gradient" di panduan brand.
+     --a-clr-primary di atas = --a-clr-brand-1 (versi solid: teks, ikon,
+     border) supaya satu sumber kebenaran warna brand. */
+  --a-clr-brand-1: #1976f3; /* Circle Snap Blue */
+  --a-clr-brand-2: #2f80ff; /* Bright Blue */
+}
+
+/* Spinner tombol async (§15.24 UI-UX-DESIGN-SYSTEM.md) — satu keyframe
+   dipakai ulang oleh semua tombol yang butuh indikator "sedang
+   memproses" (submit Login/Daftar, Hapus Permanen, Simpan tab editor,
+   dst), bukan animasi terpisah tiap komponen. Dihormati oleh
+   prefers-reduced-motion global di atas (animation-duration ditimpa
+   0.01ms di sana). */
+@keyframes admin-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Titik hijau berdenyut pada badge "Pratinjau Langsung" (§11.8 panel
+   kanan poin 3). Ikut dihormati prefers-reduced-motion global di atas. */
+@keyframes admin-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.8);
+  }
+}
+
+.admin-root {
+  background: var(--a-clr-bg);
+  color: var(--a-clr-text);
+  font-family: var(--font-sans);
+}
+
+.admin-login-bg {
+  background:
+    radial-gradient(ellipse at 15% 15%, rgba(25, 118, 243, 0.12) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 85%, rgba(47, 128, 255, 0.12) 0%, transparent 55%),
+    var(--a-clr-bg);
+}
+
+/* Focus ring keyboard — §5.7 UI-UX-DESIGN-SYSTEM.md: setiap elemen
+   interaktif WAJIB punya focus state terlihat jelas saat navigasi Tab,
+   bukan cuma :hover. `:focus-visible` (bukan `:focus` biasa) supaya
+   ring cuma muncul untuk navigasi keyboard, tidak nongol tiap diklik
+   mouse. Diterapkan luas ke seluruh admin (login/daftar di luar
+   .admin-root, sisanya di dalam) lewat selector gabungan, bukan
+   per-komponen satu-satu — supaya tombol/link baru otomatis kebagian
+   tanpa perlu diingat-ingat. */
+.admin-root button:focus-visible,
+.admin-root a:focus-visible,
+.admin-root input:focus-visible,
+.admin-root [tabindex]:focus-visible,
+.admin-login-bg button:focus-visible,
+.admin-login-bg a:focus-visible,
+.admin-login-bg input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(25, 118, 243, 0.4);
+}
+/* .admin-input sudah punya box-shadow sendiri saat :focus (biru tipis,
+   penanda "field aktif") — dibedakan dari ring keyboard supaya kombinasi
+   klik-lalu-Tab tidak numpuk dua shadow beda makna jadi aneh. Ring
+   keyboard di sini menang (lebih tebal, dideklarasikan belakangan). */
+
+.admin-card {
+  background: var(--a-clr-surface);
+  border-radius: var(--a-radius-lg);
+  border: 1px solid var(--a-clr-border);
+  box-shadow: var(--a-shadow-sm);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.admin-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--a-shadow-md);
+}
+
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: var(--a-radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.admin-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.admin-btn-press:active {
+  transform: scale(0.96);
+}
+
+/* Pil penuh — HANYA untuk CTA berdiri sendiri (submit Login/Daftar,
+   tombol Google di situ), samakan dengan referensi Glyka PartyBox
+   (borderRadius: 100). Tombol yang hidup DI DALAM kartu/form lain
+   (Simpan tab editor, "Buka" di kartu event) SENGAJA tetap
+   --a-radius-md seperti referensi sendiri (mis. tombol "Pilih Pesta"
+   full-width di kartu cuma borderRadius: 10, bukan pil) — pil di semua
+   tombol bikin tombol full-width di dalam kartu terlihat aneh (oval
+   memanjang), bukan makin mirip referensi. */
+.admin-btn-pill {
+  border-radius: var(--a-radius-full);
+}
+
+.admin-btn-primary {
+  background: linear-gradient(135deg, var(--a-clr-primary), var(--a-clr-primary-dark));
+  color: white;
+  box-shadow: 0 4px 15px rgba(25, 118, 243, 0.35);
+}
+.admin-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(25, 118, 243, 0.45);
+}
+
+.admin-btn-secondary {
+  background: white;
+  color: var(--a-clr-primary);
+  border: 1.5px solid var(--a-clr-primary);
+}
+.admin-btn-secondary:hover:not(:disabled) {
+  background: var(--a-clr-primary-light);
+}
+
+/* Dipakai untuk tombol "Lanjutkan dengan Google" — class terpisah,
+   BUKAN Tailwind utility (bg-white/border-...) di atas .admin-btn,
+   karena .admin-btn ditulis unlayered (border: none) dan SELALU menang
+   atas utility Tailwind yang ada di @layer utilities, berapa pun
+   spesifisitasnya (gotcha yang sama dengan .name-input:focus-visible
+   di atas). */
+.admin-btn-outline {
+  background: white;
+  color: var(--a-clr-text);
+  border: 1.5px solid var(--a-clr-border);
+}
+.admin-btn-outline:hover:not(:disabled) {
+  background: var(--a-clr-bg);
+}
+
+.admin-btn-ghost {
+  background: transparent;
+  color: var(--a-clr-text-muted);
+}
+.admin-btn-ghost:hover:not(:disabled) {
+  background: var(--a-clr-primary-light);
+  color: var(--a-clr-primary);
+}
+
+.admin-btn-danger-ghost {
+  background: transparent;
+  color: var(--a-clr-danger);
+  border: 1.5px solid rgba(239, 68, 68, 0.3);
+}
+.admin-btn-danger-ghost:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.admin-btn-sm {
+  padding: 8px 16px;
+  font-size: 13px;
+}
+
+.admin-input {
+  width: 100%;
+  /* 12px/16px — diukur langsung (Puppeteer) dari input referensi, bukan
+     kira-kira. Sebelumnya 11px/14px, hasilnya 3px lebih pendek per input. */
+  padding: 12px 16px;
+  border: 1.5px solid var(--a-clr-border);
+  border-radius: var(--a-radius-md);
+  font-size: 14px;
+  font-family: var(--font-sans);
+  color: var(--a-clr-text);
+  background: white;
+  transition: all 0.2s;
+  outline: none;
+}
+.admin-input:focus {
+  border-color: var(--a-clr-primary);
+  box-shadow: 0 0 0 3px rgba(25, 118, 243, 0.12);
+}
+
+/* Override khusus admin untuk aturan autofill di atas (baris ~55) — itu
+   ditulis untuk playground GELAP (var(--color-ink)/--color-paper), jadi
+   kalau browser meng-autofill input admin (mis. password login yang
+   pernah disimpan), input-nya ikut dicat gelap juga karena aturan itu
+   tanpa scope. Selector di sini SENGAJA diberi prefix `.admin-input`
+   (bukan cuma `input`) supaya spesifisitasnya lebih tinggi dan menang —
+   dua-duanya sama-sama unlayered jadi berlaku aturan spesifisitas CSS
+   normal, bukan gotcha cascade-layer (lihat catatan .name-input di
+   bawah). */
+.admin-input:-webkit-autofill,
+.admin-input:-webkit-autofill:hover,
+.admin-input:-webkit-autofill:focus,
+.admin-input:autofill {
+  -webkit-text-fill-color: var(--a-clr-text);
+  -webkit-box-shadow: 0 0 0px 1000px white inset;
+  box-shadow: 0 0 0px 1000px white inset;
+  caret-color: var(--a-clr-text);
+  font-family: var(--font-sans);
+}
+
+.admin-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 6px;
+}
+
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--a-radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.admin-badge-success {
+  background: #d1fae5;
+  color: #065f46;
+}
+.admin-badge-neutral {
+  background: #f1f5f9;
+  color: #64748b;
+}
+.admin-badge-purple {
+  background: var(--a-clr-primary-light);
+  color: var(--a-clr-primary-dark);
+}
+.admin-badge-danger {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.admin-progress-bar {
+  height: 8px;
+  border-radius: var(--a-radius-full);
+  background: var(--a-clr-primary-light);
+  overflow: hidden;
+}
+.admin-progress-fill {
+  height: 100%;
+  border-radius: var(--a-radius-full);
+  background: linear-gradient(90deg, var(--a-clr-brand-1), var(--a-clr-brand-2));
+  transition: width 0.6s ease;
+}
+.admin-progress-fill-warn {
+  background: linear-gradient(90deg, var(--a-clr-warning), var(--a-clr-danger));
+}
+
+.admin-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--a-radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--a-clr-text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+.admin-sidebar-link:hover {
+  background: var(--a-clr-primary-light);
+  color: var(--a-clr-primary);
+}
+.admin-sidebar-link.active {
+  background: var(--a-clr-primary-light);
+  color: var(--a-clr-primary);
+}
+
+.admin-gradient-text {
+  background: linear-gradient(135deg, var(--a-clr-brand-1), var(--a-clr-brand-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.admin-fade-in {
+  animation: adminFadeIn 0.3s ease-out;
+}
+@keyframes adminFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

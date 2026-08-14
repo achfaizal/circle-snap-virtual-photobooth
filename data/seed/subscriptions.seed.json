@@ -1,0 +1,46 @@
+[
+  {
+    "id": "sub_wedding",
+    "clientId": "cli_demo",
+    "eventId": "evt_wedding_salma_faizal",
+    "planId": "plan_seed_legacy",
+    "stripQuota": 200,
+    "maxFrames": 7,
+    "maxVoiceSeconds": 15,
+    "storageMb": 500,
+    "features": {
+      "voiceNote": true,
+      "momentsGallery": true,
+      "bulkDownload": false,
+      "removeCircleSnapBranding": false,
+      "customFrameUpload": true
+    },
+    "stripUsed": 0,
+    "storageUsedMb": 0,
+    "status": "expired",
+    "startsAt": "2026-07-31T00:00:00.000Z",
+    "expiresAt": "2027-05-04T00:00:00.000Z"
+  },
+  {
+    "id": "sub_engagement",
+    "clientId": "cli_demo",
+    "eventId": "evt_engagement_salfaizal",
+    "planId": "plan_seed_legacy",
+    "stripQuota": 200,
+    "maxFrames": 3,
+    "maxVoiceSeconds": 15,
+    "storageMb": 500,
+    "features": {
+      "voiceNote": true,
+      "momentsGallery": true,
+      "bulkDownload": false,
+      "removeCircleSnapBranding": false,
+      "customFrameUpload": true
+    },
+    "stripUsed": 0,
+    "storageUsedMb": 0,
+    "status": "active",
+    "startsAt": "2026-08-08T00:00:00.000Z",
+    "expiresAt": "2026-09-07T00:00:00.000Z"
+  }
+]

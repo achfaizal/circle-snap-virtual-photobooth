@@ -1,0 +1,100 @@
+[
+  {
+    "clientId": "cli_570d5efb-ea96-4728-9f19-c4370664b87b",
+    "slug": "q",
+    "status": "draft",
+    "identity": {
+      "internalName": "a",
+      "kind": "engagement",
+      "brandLabel": "Happy Engagement",
+      "names": "q",
+      "date": "2026-08-13",
+      "dateDisplay": "13 Agustus 2026",
+      "venue": "",
+      "hashtag": "",
+      "greeting": "Terima kasih sudah datang di acara lamaran kami. Ambil foto sebanyak yang kamu mau, lalu titip pesan suara untuk kami."
+    },
+    "frameIds": [
+      "frm_eng_1",
+      "frm_eng_2",
+      "frm_eng_3"
+    ],
+    "theme": {
+      "preset": "botanical",
+      "colors": {
+        "ink": "#F3F3E9",
+        "film": "#3b3930",
+        "edge": "#C9B78A",
+        "smoke": "#6B5D3F",
+        "paper": "#2E2A1E",
+        "flash": "#A98D4A",
+        "live": "#A63B2E",
+        "brandPurple": "#7A5E28",
+        "brandGold": "#D8C08A"
+      },
+      "fontDisplayId": "playfair",
+      "fontMonoId": "space-mono",
+      "effects": {
+        "petals": {
+          "enabled": true,
+          "count": 7
+        },
+        "blobs": true,
+        "confetti": true
+      },
+      "videoCard": {
+        "bg": "#FFFFFF",
+        "ink": "#1A1610",
+        "smoke": "#8A8478",
+        "waveActive": "#EC4899",
+        "waveTrack": "#E7E2D8",
+        "headingGradient": [
+          "#7C3AED",
+          "#EC4899",
+          "#F59E0B"
+        ]
+      },
+      "decorAssetId": "ast_eng_decor",
+      "videoBgAssetId": "ast_eng_video_bg",
+      "elements": {
+        "buttonShape": "pill",
+        "monogram": {
+          "mode": "initials",
+          "size": 72,
+          "ring": true
+        }
+      }
+    },
+    "session": {
+      "countdownSeconds": 3,
+      "autoContinue": true,
+      "mirror": true,
+      "maxRetakes": 3,
+      "revealMs": 15000,
+      "filterCss": "brightness(1.08) contrast(1.04) saturate(1.12)",
+      "cameraAspect": "1:1",
+      "guestNameRequired": true,
+      "voice": {
+        "enabled": true,
+        "maxSeconds": 15
+      },
+      "moments": {
+        "enabled": true,
+        "showGuestName": true
+      },
+      "share": {
+        "instagram": true,
+        "whatsapp": true,
+        "nativeShare": true,
+        "downloadPng": true,
+        "downloadJpg": true,
+        "downloadVideo": true
+      }
+    },
+    "copy": {},
+    "id": "evt_1aefe4a1-6599-40c2-ada1-b46fb8cefa85",
+    "createdAt": "2026-08-13T10:52:24.173Z",
+    "updatedAt": "2026-08-13T16:16:39.343Z",
+    "templateId": "botanical"
+  }
+]

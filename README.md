@@ -1,4 +1,4 @@
-# Glyka Photobooth Virtual — Playground Sesi Photobooth Event
+# Circle Snap Virtual Photobox — Playground Sesi Photobooth Event
 
 Prototipe alur tamu yang bisa dijalankan, untuk segmen **photobooth event
 berbasis kuota**: klien membeli paket (misalnya 200 strip), panitia menaruh QR
@@ -71,7 +71,7 @@ Reels dan TikTok, dan itulah jalur penyebaran paling murah untuk produk ini.
 | Kamera, negosiasi resolusi bertingkat, ganti depan/belakang | ✅ |
 | Hitung mundur 0/3/5/10 detik + lanjut otomatis antar-foto | ✅ |
 | Ulang foto per slot tanpa mengulang sesi | ✅ |
-| 6 filter yang konsisten antara preview dan hasil | ✅ |
+| Filter warna tetap, konsisten antara preview dan hasil | ✅ |
 | Teks event dinamis di bingkai + penyusutan font otomatis | ✅ |
 | Preview strip hidup memakai mesin yang sama dengan ekspor | ✅ |
 | Rekam pesan suara + meteran level | ✅ |
@@ -132,19 +132,15 @@ lib/
   filters.ts              filter untuk preview dan kanvas
   store.ts                state machine sesi
 public/templates/*.png    overlay transparan tanpa teks
-gen_templates.py          generator overlay (Pillow)
 ```
 
 ## Menambah bingkai
 
-1. Buat PNG RGBA seukuran kanvas ekspor, transparan penuh di area foto, **tanpa
-   teks apa pun**.
-2. Simpan di `public/templates/`.
-3. Tambah entri di `TEMPLATES` dengan koordinat slot yang sama persis dengan
-   lubang di PNG, plus `textLayers` memakai token `{{names}}`, `{{date}}`,
-   `{{venue}}`, `{{hashtag}}`, `{{code}}`.
-
-`gen_templates.py` mendefinisikan slot sekali lalu "melubangi" PNG secara
-terprogram, sehingga koordinat gambar dan koordinat kode tidak mungkin
-berbeda. Pola ini yang nanti dipakai admin uploader: desainer menandai area
-foto di kanvas, sistem yang menghitung koordinatnya.
+1. Simpan PNG RGBA (transparan penuh di area foto, **tanpa teks apa pun**) di
+   `public/templates/<nama-event>/`.
+2. Tentukan koordinat slot foto dari kanal alpha PNG-nya (bukan ditaksir
+   manual) — area yang transparan penuh adalah lubang foto.
+3. Tambah entri di `TEMPLATES` (`lib/templates.ts`) dengan koordinat slot yang
+   sama persis dengan lubang di PNG, plus `textLayers` memakai token
+   `{{names}}`, `{{date}}`, `{{venue}}`, `{{hashtag}}`, `{{code}}` — kosongkan
+   `textLayers` kalau teks sudah tercetak di dalam PNG itu sendiri.

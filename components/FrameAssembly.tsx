@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import type { Template } from "@/lib/templates";
+import { useSession } from "@/lib/store";
 import StripCanvas from "./StripCanvas";
 
 /**
@@ -11,12 +12,12 @@ import StripCanvas from "./StripCanvas";
  * atas ke bawah seperti struk keluar dari printer, bukan tiap foto
  * berkembang sendiri-sendiri di slotnya.
  *
- * Durasinya jauh lebih lambat dari animasi `print-reveal` versi StepShoot
- * (lihat globals.css) — di-override lewat inline `animationDuration`
- * memakai keyframe yang sama, bukan bikin keyframe baru cuma beda angka.
+ * Durasinya (session.revealMs, diatur per-event lewat admin — lihat
+ * lib/store.ts) jauh lebih lambat dari animasi `print-reveal` versi
+ * StepShoot (lihat globals.css) — di-override lewat inline
+ * `animationDuration` memakai keyframe yang sama, bukan bikin keyframe
+ * baru cuma beda angka.
  */
-const REVEAL_MS = 15000;
-
 export default function FrameAssembly({
   template,
   onDone,
@@ -24,11 +25,13 @@ export default function FrameAssembly({
   template: Template;
   onDone: () => void;
 }) {
+  const revealMs = useSession((s) => s.revealMs);
+
   useEffect(() => {
-    const t = setTimeout(onDone, REVEAL_MS + 400);
+    const t = setTimeout(onDone, revealMs + 400);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [template]);
+  }, [template, revealMs]);
 
   return (
     <section className="step-enter mx-auto max-w-md space-y-5 text-center">
@@ -40,7 +43,7 @@ export default function FrameAssembly({
             tercetak, jadi ada "garis hantu" bentuk bingkai kosong. */}
         <div
           className="print-reveal relative inline-block overflow-hidden rounded-2xl ring-1 ring-edge"
-          style={{ animationDuration: `${REVEAL_MS}ms` }}
+          style={{ animationDuration: `${revealMs}ms` }}
         >
           {/* Bilah gelap di ujung atas meniru slot tempat kertas keluar
               dari printer. */}
@@ -51,7 +54,7 @@ export default function FrameAssembly({
           <div
             className="print-edge pointer-events-none absolute inset-x-0 z-10 h-8"
             style={{
-              animationDuration: `${REVEAL_MS}ms`,
+              animationDuration: `${revealMs}ms`,
               background:
                 "linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.08) 60%, transparent)",
             }}

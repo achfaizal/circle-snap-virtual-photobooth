@@ -1,0 +1,675 @@
+[
+  {
+    "clientId": "cli_demo",
+    "slug": "lamarin",
+    "status": "draft",
+    "identity": {
+      "internalName": "Lamarin",
+      "kind": "engagement",
+      "brandLabel": "Happy Engagement",
+      "names": "Lamarin",
+      "date": "2026-08-26",
+      "dateDisplay": "26 Agustus 2026",
+      "venue": "Lamarin",
+      "hashtag": "Lamarin",
+      "greeting": "Terima kasih sudah datang di acara lamaran kami. Ambil foto sebanyak yang kamu mau, lalu titip pesan suara untuk kami."
+    },
+    "frameIds": [],
+    "theme": {
+      "preset": "polos",
+      "colors": {
+        "ink": "#FFFFFF",
+        "film": "#F4F4F5",
+        "edge": "#D4D4D8",
+        "smoke": "#52525B",
+        "paper": "#18181B",
+        "flash": "#3F3F46",
+        "live": "#DC2626",
+        "brandPurple": "#27272A",
+        "brandGold": "#52525B"
+      },
+      "fontDisplayId": "playfair",
+      "fontMonoId": "space-mono",
+      "effects": {
+        "petals": {
+          "enabled": false,
+          "count": 0
+        },
+        "blobs": false,
+        "confetti": false,
+        "bokeh": false,
+        "sparkle": false
+      },
+      "videoCard": {
+        "bg": "#FFFFFF",
+        "ink": "#1A1610",
+        "smoke": "#8A8478",
+        "waveActive": "#EC4899",
+        "waveTrack": "#E7E2D8",
+        "headingGradient": [
+          "#7C3AED",
+          "#EC4899",
+          "#F59E0B"
+        ]
+      }
+    },
+    "session": {
+      "countdownSeconds": 3,
+      "autoContinue": true,
+      "mirror": true,
+      "maxRetakes": 3,
+      "revealMs": 15000,
+      "filterCss": "brightness(1.08) contrast(1.04) saturate(1.12)",
+      "cameraAspect": "1:1",
+      "guestNameRequired": true,
+      "voice": {
+        "enabled": true,
+        "maxSeconds": 15
+      },
+      "moments": {
+        "enabled": true,
+        "showGuestName": true
+      },
+      "share": {
+        "instagram": true,
+        "whatsapp": true,
+        "nativeShare": true,
+        "downloadPng": true,
+        "downloadJpg": true,
+        "downloadVideo": true
+      }
+    },
+    "copy": {},
+    "id": "evt_2e69e89e-3b3f-4d7e-8fe9-4bdf2b9b5667",
+    "createdAt": "2026-08-13T05:47:55.107Z",
+    "updatedAt": "2026-08-13T05:47:55.107Z"
+  },
+  {
+    "clientId": "cli_cc3078a3-9ea8-4ea2-a164-52cc7ec57af9",
+    "slug": "uji-race-1786617093777-5",
+    "status": "draft",
+    "identity": {
+      "internalName": "Race Test 5",
+      "brandLabel": "Test",
+      "names": "Race 5",
+      "date": "2027-03-01",
+      "dateDisplay": "1 Maret 2027",
+      "venue": "Test",
+      "hashtag": "#Race5",
+      "greeting": "Test."
+    },
+    "frameIds": [],
+    "theme": {
+      "preset": "polos",
+      "colors": {
+        "ink": "#FFFFFF",
+        "film": "#F4F4F5",
+        "edge": "#D4D4D8",
+        "smoke": "#52525B",
+        "paper": "#18181B",
+        "flash": "#3F3F46",
+        "live": "#DC2626",
+        "brandPurple": "#27272A",
+        "brandGold": "#52525B"
+      },
+      "fontDisplayId": "playfair",
+      "fontMonoId": "space-mono",
+      "effects": {
+        "petals": {
+          "enabled": false,
+          "count": 0
+        },
+        "blobs": false,
+        "confetti": false,
+        "bokeh": false,
+        "sparkle": false
+      },
+      "videoCard": {
+        "bg": "#FFFFFF",
+        "ink": "#1A1610",
+        "smoke": "#8A8478",
+        "waveActive": "#EC4899",
+        "waveTrack": "#E7E2D8",
+        "headingGradient": [
+          "#7C3AED",
+          "#EC4899",
+          "#F59E0B"
+        ]
+      }
+    },
+    "session": {
+      "countdownSeconds": 3,
+      "autoContinue": true,
+      "mirror": true,
+      "maxRetakes": 3,
+      "revealMs": 15000,
+      "filterCss": "brightness(1.08) contrast(1.04) saturate(1.12)",
+      "cameraAspect": "1:1",
+      "guestNameRequired": true,
+      "voice": {
+        "enabled": true,
+        "maxSeconds": 15
+      },
+      "moments": {
+        "enabled": true,
+        "showGuestName": true
+      },
+      "share": {
+        "instagram": true,
+        "whatsapp": true,
+        "nativeShare": true,
+        "downloadPng": true,
+        "downloadJpg": true,
+        "downloadVideo": true
+      }
+    },
+    "copy": {},
+    "id": "evt_0d53b979-dc3c-49cf-a59d-d05b1dabd711",
+    "createdAt": "2026-08-13T10:31:35.021Z",
+    "updatedAt": "2026-08-13T10:31:35.022Z"
+  },
+  {
+    "clientId": "cli_cc3078a3-9ea8-4ea2-a164-52cc7ec57af9",
+    "slug": "uji-race-1786617093774-1",
+    "status": "draft",
+    "identity": {
+      "internalName": "Race Test 1",
+      "brandLabel": "Test",
+      "names": "Race 1",
+      "date": "2027-03-01",
+      "dateDisplay": "1 Maret 2027",
+      "venue": "Test",
+      "hashtag": "#Race1",
+      "greeting": "Test."
+    },
+    "frameIds": [],
+    "theme": {
+      "preset": "polos",
+      "colors": {
+        "ink": "#FFFFFF",
+        "film": "#F4F4F5",
+        "edge": "#D4D4D8",
+        "smoke": "#52525B",
+        "paper": "#18181B",
+        "flash": "#3F3F46",
+        "live": "#DC2626",
+        "brandPurple": "#27272A",
+        "brandGold": "#52525B"
+      },
+      "fontDisplayId": "playfair",
+      "fontMonoId": "space-mono",
+      "effects": {
+        "petals": {
+          "enabled": false,
+          "count": 0
+        },
+        "blobs": false,
+        "confetti": false,
+        "bokeh": false,
+        "sparkle": false
+      },
+      "videoCard": {
+        "bg": "#FFFFFF",
+        "ink": "#1A1610",
+        "smoke": "#8A8478",
+        "waveActive": "#EC4899",
+        "waveTrack": "#E7E2D8",
+        "headingGradient": [
+          "#7C3AED",
+          "#EC4899",
+          "#F59E0B"
+        ]
+      }
+    },
+    "session": {
+      "countdownSeconds": 3,
+      "autoContinue": true,
+      "mirror": true,
+      "maxRetakes": 3,
+      "revealMs": 15000,
+      "filterCss": "brightness(1.08) contrast(1.04) saturate(1.12)",
+      "cameraAspect": "1:1",
+      "guestNameRequired": true,
+      "voice": {
+        "enabled": true,
+        "maxSeconds": 15
+      },
+      "moments": {
+        "enabled": true,
+        "showGuestName": true
+      },
+      "share": {
+        "instagram": true,
+        "whatsapp": true,
+        "nativeShare": true,
+        "downloadPng": true,
+        "downloadJpg": true,
+        "downloadVideo": true
+      }
+    },
+    "copy": {},
+    "id": "evt_71b7917b-9077-4628-b1d3-a10c37814bc6",
+    "createdAt": "2026-08-13T10:31:35.023Z",
+    "updatedAt": "2026-08-13T10:31:35.023Z"
+  },
+  {
+    "clientId": "cli_cc3078a3-9ea8-4ea2-a164-52cc7ec57af9",
+    "slug": "uji-race-1786617093776-4",
+    "status": "draft",
+    "identity": {
+      "internalName": "Race Test 4",
+      "brandLabel": "Test",
+      "names": "Race 4",
+      "date": "2027-03-01",
+      "dateDisplay": "1 Maret 2027",
+      "venue": "Test",
+      "hashtag": "#Race4",
+      "greeting": "Test."
+    },
+    "frameIds": [],
+    "theme": {
+      "preset": "polos",
+      "colors": {
+        "ink": "#FFFFFF",
+        "film": "#F4F4F5",
+        "edge": "#D4D4D8",
+        "smoke": "#52525B",
+        "paper": "#18181B",
+        "flash": "#3F3F46",
+        "live": "#DC2626",
+        "brandPurple": "#27272A",
+        "brandGold": "#52525B"
+      },
+      "fontDisplayId": "playfair",
+      "fontMonoId": "space-mono",
+      "effects": {
+        "petals": {
+          "enabled": false,
+          "count": 0
+        },
+        "blobs": false,
+        "confetti": false,
+        "bokeh": false,
+        "sparkle": false
+      },
+      "videoCard": {
+        "bg": "#FFFFFF",
+        "ink": "#1A1610",
+        "smoke": "#8A8478",
+        "waveActive": "#EC4899",
+        "waveTrack": "#E7E2D8",
+        "headingGradient": [
+          "#7C3AED",
+          "#EC4899",
+          "#F59E0B"
+        ]
+      }
+    },
+    "session": {
+      "countdownSeconds": 3,
+      "autoContinue": true,
+      "mirror": true,
+      "maxRetakes": 3,
+      "revealMs": 15000,
+      "filterCss": "brightness(1.08) contrast(1.04) saturate(1.12)",
+      "cameraAspect": "1:1",
+      "guestNameRequired": true,
+      "voice": {
+        "enabled": true,
+        "maxSeconds": 15
+      },
+      "moments": {
+        "enabled": true,
+        "showGuestName": true
+      },
+      "share": {
+        "instagram": true,
+        "whatsapp": true,
+        "nativeShare": true,
+        "downloadPng": true,
+        "downloadJpg": true,
+        "downloadVideo": true
+      }
+    },
+    "copy": {},
+    "id": "evt_600a8653-15c6-44f6-a39b-b70752724a4b",
+    "createdAt": "2026-08-13T10:31:35.022Z",
+    "updatedAt": "2026-08-13T10:31:35.022Z"
+  },
+  {
+    "clientId": "cli_cc3078a3-9ea8-4ea2-a164-52cc7ec57af9",
+    "slug": "uji-race-1786617093773-0",
+    "status": "draft",
+    "identity": {
+      "internalName": "Race Test 0",
+      "brandLabel": "Test",
+      "names": "Race 0",
+      "date": "2027-03-01",
+      "dateDisplay": "1 Maret 2027",
+      "venue": "Test",
+      "hashtag": "#Race0",
+      "greeting": "Test."
+    },
+    "frameIds": [],
+    "theme": {
+      "preset": "polos",
+      "colors": {
+        "ink": "#FFFFFF",
+        "film": "#F4F4F5",
+        "edge": "#D4D4D8",
+        "smoke": "#52525B",
+        "paper": "#18181B",
+        "flash": "#3F3F46",
+        "live": "#DC2626",
+        "brandPurple": "#27272A",
+        "brandGold": "#52525B"
+      },
+      "fontDisplayId": "playfair",
+      "fontMonoId": "space-mono",
+      "effects": {
+        "petals": {
+          "enabled": false,
+          "count": 0
+        },
+        "blobs": false,
+        "confetti": false,
+        "bokeh": false,
+        "sparkle": false
+      },
+      "videoCard": {
+        "bg": "#FFFFFF",
+        "ink": "#1A1610",
+        "smoke": "#8A8478",
+        "waveActive": "#EC4899",
+        "waveTrack": "#E7E2D8",
+        "headingGradient": [
+          "#7C3AED",
+          "#EC4899",
+          "#F59E0B"
+        ]
+      }
+    },
+    "session": {
+      "countdownSeconds": 3,
+      "autoContinue": true,
+      "mirror": true,
+      "maxRetakes": 3,
+      "revealMs": 15000,
+      "filterCss": "brightness(1.08) contrast(1.04) saturate(1.12)",
+      "cameraAspect": "1:1",
+      "guestNameRequired": true,
+      "voice": {
+        "enabled": true,
+        "maxSeconds": 15
+      },
+      "moments": {
+        "enabled": true,
+        "showGuestName": true
+      },
+      "share": {
+        "instagram": true,
+        "whatsapp": true,
+        "nativeShare": true,
+        "downloadPng": true,
+        "downloadJpg": true,
+        "downloadVideo": true
+      }
+    },
+    "copy": {},
+    "id": "evt_5340fbe6-4cc6-4c05-8916-482cdfbf84ec",
+    "createdAt": "2026-08-13T10:31:35.024Z",
+    "updatedAt": "2026-08-13T10:31:35.024Z"
+  },
+  {
+    "clientId": "cli_cc3078a3-9ea8-4ea2-a164-52cc7ec57af9",
+    "slug": "uji-race-1786617093775-2",
+    "status": "draft",
+    "identity": {
+      "internalName": "Race Test 2",
+      "brandLabel": "Test",
+      "names": "Race 2",
+      "date": "2027-03-01",
+      "dateDisplay": "1 Maret 2027",
+      "venue": "Test",
+      "hashtag": "#Race2",
+      "greeting": "Test."
+    },
+    "frameIds": [],
+    "theme": {
+      "preset": "polos",
+      "colors": {
+        "ink": "#FFFFFF",
+        "film": "#F4F4F5",
+        "edge": "#D4D4D8",
+        "smoke": "#52525B",
+        "paper": "#18181B",
+        "flash": "#3F3F46",
+        "live": "#DC2626",
+        "brandPurple": "#27272A",
+        "brandGold": "#52525B"
+      },
+      "fontDisplayId": "playfair",
+      "fontMonoId": "space-mono",
+      "effects": {
+        "petals": {
+          "enabled": false,
+          "count": 0
+        },
+        "blobs": false,
+        "confetti": false,
+        "bokeh": false,
+        "sparkle": false
+      },
+      "videoCard": {
+        "bg": "#FFFFFF",
+        "ink": "#1A1610",
+        "smoke": "#8A8478",
+        "waveActive": "#EC4899",
+        "waveTrack": "#E7E2D8",
+        "headingGradient": [
+          "#7C3AED",
+          "#EC4899",
+          "#F59E0B"
+        ]
+      }
+    },
+    "session": {
+      "countdownSeconds": 3,
+      "autoContinue": true,
+      "mirror": true,
+      "maxRetakes": 3,
+      "revealMs": 15000,
+      "filterCss": "brightness(1.08) contrast(1.04) saturate(1.12)",
+      "cameraAspect": "1:1",
+      "guestNameRequired": true,
+      "voice": {
+        "enabled": true,
+        "maxSeconds": 15
+      },
+      "moments": {
+        "enabled": true,
+        "showGuestName": true
+      },
+      "share": {
+        "instagram": true,
+        "whatsapp": true,
+        "nativeShare": true,
+        "downloadPng": true,
+        "downloadJpg": true,
+        "downloadVideo": true
+      }
+    },
+    "copy": {},
+    "id": "evt_2f53e2d7-630c-4c33-aa07-1e183079b8d6",
+    "createdAt": "2026-08-13T10:31:35.023Z",
+    "updatedAt": "2026-08-13T10:31:35.023Z"
+  },
+  {
+    "clientId": "cli_cc3078a3-9ea8-4ea2-a164-52cc7ec57af9",
+    "slug": "uji-race-1786617093778-7",
+    "status": "draft",
+    "identity": {
+      "internalName": "Race Test 7",
+      "brandLabel": "Test",
+      "names": "Race 7",
+      "date": "2027-03-01",
+      "dateDisplay": "1 Maret 2027",
+      "venue": "Test",
+      "hashtag": "#Race7",
+      "greeting": "Test."
+    },
+    "frameIds": [],
+    "theme": {
+      "preset": "polos",
+      "colors": {
+        "ink": "#FFFFFF",
+        "film": "#F4F4F5",
+        "edge": "#D4D4D8",
+        "smoke": "#52525B",
+        "paper": "#18181B",
+        "flash": "#3F3F46",
+        "live": "#DC2626",
+        "brandPurple": "#27272A",
+        "brandGold": "#52525B"
+      },
+      "fontDisplayId": "playfair",
+      "fontMonoId": "space-mono",
+      "effects": {
+        "petals": {
+          "enabled": false,
+          "count": 0
+        },
+        "blobs": false,
+        "confetti": false,
+        "bokeh": false,
+        "sparkle": false
+      },
+      "videoCard": {
+        "bg": "#FFFFFF",
+        "ink": "#1A1610",
+        "smoke": "#8A8478",
+        "waveActive": "#EC4899",
+        "waveTrack": "#E7E2D8",
+        "headingGradient": [
+          "#7C3AED",
+          "#EC4899",
+          "#F59E0B"
+        ]
+      }
+    },
+    "session": {
+      "countdownSeconds": 3,
+      "autoContinue": true,
+      "mirror": true,
+      "maxRetakes": 3,
+      "revealMs": 15000,
+      "filterCss": "brightness(1.08) contrast(1.04) saturate(1.12)",
+      "cameraAspect": "1:1",
+      "guestNameRequired": true,
+      "voice": {
+        "enabled": true,
+        "maxSeconds": 15
+      },
+      "moments": {
+        "enabled": true,
+        "showGuestName": true
+      },
+      "share": {
+        "instagram": true,
+        "whatsapp": true,
+        "nativeShare": true,
+        "downloadPng": true,
+        "downloadJpg": true,
+        "downloadVideo": true
+      }
+    },
+    "copy": {},
+    "id": "evt_3e37d648-27c7-4b95-95da-df932d76bf5f",
+    "createdAt": "2026-08-13T10:31:35.024Z",
+    "updatedAt": "2026-08-13T10:31:35.024Z"
+  },
+  {
+    "clientId": "cli_cc3078a3-9ea8-4ea2-a164-52cc7ec57af9",
+    "slug": "uji-race-1786617093777-6",
+    "status": "draft",
+    "identity": {
+      "internalName": "Race Test 6",
+      "brandLabel": "Test",
+      "names": "Race 6",
+      "date": "2027-03-01",
+      "dateDisplay": "1 Maret 2027",
+      "venue": "Test",
+      "hashtag": "#Race6",
+      "greeting": "Test."
+    },
+    "frameIds": [],
+    "theme": {
+      "preset": "polos",
+      "colors": {
+        "ink": "#FFFFFF",
+        "film": "#F4F4F5",
+        "edge": "#D4D4D8",
+        "smoke": "#52525B",
+        "paper": "#18181B",
+        "flash": "#3F3F46",
+        "live": "#DC2626",
+        "brandPurple": "#27272A",
+        "brandGold": "#52525B"
+      },
+      "fontDisplayId": "playfair",
+      "fontMonoId": "space-mono",
+      "effects": {
+        "petals": {
+          "enabled": false,
+          "count": 0
+        },
+        "blobs": false,
+        "confetti": false,
+        "bokeh": false,
+        "sparkle": false
+      },
+      "videoCard": {
+        "bg": "#FFFFFF",
+        "ink": "#1A1610",
+        "smoke": "#8A8478",
+        "waveActive": "#EC4899",
+        "waveTrack": "#E7E2D8",
+        "headingGradient": [
+          "#7C3AED",
+          "#EC4899",
+          "#F59E0B"
+        ]
+      }
+    },
+    "session": {
+      "countdownSeconds": 3,
+      "autoContinue": true,
+      "mirror": true,
+      "maxRetakes": 3,
+      "revealMs": 15000,
+      "filterCss": "brightness(1.08) contrast(1.04) saturate(1.12)",
+      "cameraAspect": "1:1",
+      "guestNameRequired": true,
+      "voice": {
+        "enabled": true,
+        "maxSeconds": 15
+      },
+      "moments": {
+        "enabled": true,
+        "showGuestName": true
+      },
+      "share": {
+        "instagram": true,
+        "whatsapp": true,
+        "nativeShare": true,
+        "downloadPng": true,
+        "downloadJpg": true,
+        "downloadVideo": true
+      }
+    },
+    "copy": {},
+    "id": "evt_d34e9173-2b03-4e7c-b9ca-570c44a3245e",
+    "createdAt": "2026-08-13T10:31:35.023Z",
+    "updatedAt": "2026-08-13T10:31:35.023Z"
+  }
+]

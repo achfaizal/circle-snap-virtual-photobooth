@@ -90,15 +90,3 @@ export async function startRecording(): Promise<Recorder> {
     },
   };
 }
-
-export async function blobDuration(blob: Blob): Promise<number> {
-  try {
-    const ctx = new AudioContext();
-    const buf = await ctx.decodeAudioData(await blob.arrayBuffer());
-    const d = buf.duration;
-    void ctx.close().catch(() => {});
-    return d;
-  } catch {
-    return 0;
-  }
-}

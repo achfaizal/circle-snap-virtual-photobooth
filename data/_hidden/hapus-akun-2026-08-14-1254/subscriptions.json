@@ -1,0 +1,24 @@
+[
+  {
+    "clientId": "cli_570d5efb-ea96-4728-9f19-c4370664b87b",
+    "eventId": "evt_7ee84ba2-d8e5-4a33-9e89-9210423af463",
+    "planId": "basic",
+    "stripQuota": 100,
+    "maxFrames": 10,
+    "maxVoiceSeconds": 5,
+    "storageMb": 500,
+    "features": {
+      "voiceNote": true,
+      "momentsGallery": true,
+      "bulkDownload": false,
+      "removeCircleSnapBranding": false,
+      "customFrameUpload": true
+    },
+    "stripUsed": 0,
+    "storageUsedMb": 0,
+    "status": "active",
+    "startsAt": "2026-08-14T03:54:06.472Z",
+    "expiresAt": "2026-08-21T03:54:06.472Z",
+    "id": "sub_9c539cf7-20c2-469e-9932-1de6e59a74d0"
+  }
+]

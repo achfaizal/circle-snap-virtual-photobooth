@@ -81,37 +81,128 @@ function drawTracked(
   }
 }
 
+/**
+ * Menghitung ukuran font FINAL (setelah auto-shrink) dan baris-baris teks
+ * siap gambar untuk satu layer — dipakai BERSAMA oleh `drawTextLayer` dan
+ * `measureTextLayers`. Kalau dua-duanya menghitung ukurannya sendiri-
+ * sendiri, cepat atau lambat hasilnya beda (handle drag di editor tidak
+ * lagi menempel pas di teks yang sungguhan tercetak). Lihat
+ * docs/blueprint/07-canvas-designer.md §3.
+ *
+ * ctx dipakai HANYA untuk ctx.measureText — tidak menggambar apa pun,
+ * jadi aman dipanggil berkali-kali saat menghitung tata letak.
+ */
+export interface ResolvedTextLayer {
+  lines: string[];
+  size: number;
+  family: string;
+  weight: number;
+  tracking: number;
+  lineHeight: number;
+}
+
+function resolveTextLayer(
+  ctx: CanvasRenderingContext2D,
+  layer: TextLayer,
+  tokens: Record<string, string>,
+  scale: number
+): ResolvedTextLayer | null {
+  let text = fill(layer.text, tokens);
+  if (!text) return null;
+  if (layer.uppercase) text = text.toUpperCase();
+
+  const lines = text.split("\n");
+  const tracking = (layer.tracking ?? 0) * scale;
+  const family = familyFor(layer.face);
+  const weight = layer.weight ?? 400;
+  const lineHeight = layer.lineHeight ?? 1.2;
+
+  // Kecilkan otomatis bila terlalu panjang. Nama pengantin bisa sangat panjang
+  // ("Nur Aisyah Rahmadhani & Muhammad Fadhlurrahman") dan tidak boleh keluar
+  // dari kertas — ini kasus yang pasti terjadi, bukan tepi jarang. Baris
+  // terpanjang yang menentukan, supaya semua baris menyusut serentak
+  // (kalau tidak, tiap baris punya ukuran font berbeda — terlihat rusak).
+  let size = layer.size * scale;
+  ctx.font = `${weight} ${size}px ${family}`;
+  if (layer.maxWidth) {
+    const limit = layer.maxWidth * scale;
+    const widest = () => Math.max(...lines.map((l) => measure(ctx, l, tracking)));
+    let guard = 0;
+    while (widest() > limit && size > 8 && guard++ < 40) {
+      size *= 0.94;
+      ctx.font = `${weight} ${size}px ${family}`;
+    }
+  }
+
+  return { lines, size, family, weight, tracking, lineHeight };
+}
+
 function drawTextLayer(
   ctx: CanvasRenderingContext2D,
   layer: TextLayer,
   tokens: Record<string, string>,
   scale: number
 ) {
-  let text = fill(layer.text, tokens);
-  if (!text) return;
-  if (layer.uppercase) text = text.toUpperCase();
+  if (layer.hidden) return;
+  const resolved = resolveTextLayer(ctx, layer, tokens, scale);
+  if (!resolved) return;
 
-  const tracking = (layer.tracking ?? 0) * scale;
-  const family = familyFor(layer.face);
-  const weight = layer.weight ?? 400;
-
-  // Kecilkan otomatis bila terlalu panjang. Nama pengantin bisa sangat panjang
-  // ("Nur Aisyah Rahmadhani & Muhammad Fadhlurrahman") dan tidak boleh keluar
-  // dari kertas — ini kasus yang pasti terjadi, bukan tepi jarang.
-  let size = layer.size * scale;
+  const { lines, size, family, weight, tracking, lineHeight } = resolved;
   ctx.font = `${weight} ${size}px ${family}`;
-  if (layer.maxWidth) {
-    const limit = layer.maxWidth * scale;
-    let guard = 0;
-    while (measure(ctx, text, tracking) > limit && size > 8 && guard++ < 40) {
-      size *= 0.94;
-      ctx.font = `${weight} ${size}px ${family}`;
-    }
-  }
-
   ctx.fillStyle = layer.color;
   ctx.textBaseline = "alphabetic";
-  drawTracked(ctx, text, layer.x * scale, layer.y * scale, layer.align, tracking);
+
+  const step = size * lineHeight;
+  const x = layer.x * scale;
+  const y0 = layer.y * scale;
+  lines.forEach((line, i) => {
+    drawTracked(ctx, line, x, y0 + step * i, layer.align, tracking);
+  });
+}
+
+/**
+ * Kotak batas tiap layer teks TAMPAK (bukan tersembunyi), dalam piksel
+ * kanvas pada `scale` yang diberikan — dipakai editor untuk menempatkan
+ * handle DOM tepat di atas teks yang sungguhan tergambar. Memakai
+ * `resolveTextLayer` yang SAMA dengan `drawTextLayer`, jadi ukurannya
+ * selalu sinkron dengan hasil ekspor.
+ *
+ * x/y layer adalah baseline baris PERTAMA (sesuai kontrak drawTracked),
+ * jadi kotaknya diperluas ~0.25× ukuran font ke atas untuk mendekati
+ * cap-height — cukup akurat untuk keperluan klik & drag, bukan pengukuran
+ * tipografis presisi piksel.
+ */
+export interface TextLayerBounds {
+  index: number;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export function measureTextLayers(
+  ctx: CanvasRenderingContext2D,
+  layers: TextLayer[],
+  tokens: Record<string, string>,
+  scale: number
+): TextLayerBounds[] {
+  const out: TextLayerBounds[] = [];
+  layers.forEach((layer, index) => {
+    if (layer.hidden) return;
+    const resolved = resolveTextLayer(ctx, layer, tokens, scale);
+    if (!resolved) return;
+    ctx.font = `${resolved.weight} ${resolved.size}px ${resolved.family}`;
+    const widest = Math.max(
+      ...resolved.lines.map((l) => measure(ctx, l, resolved.tracking))
+    );
+    const step = resolved.size * resolved.lineHeight;
+    const totalH = resolved.size * 1.25 + step * (resolved.lines.length - 1);
+    const baseX = layer.x * scale;
+    const x =
+      layer.align === "center" ? baseX - widest / 2 : layer.align === "right" ? baseX - widest : baseX;
+    out.push({ index, x, y: layer.y * scale - resolved.size * 0.9, w: widest, h: totalH });
+  });
+  return out;
 }
 
 export interface ComposeOptions {
@@ -124,14 +215,23 @@ export interface ComposeOptions {
   scale?: number;
 }
 
-export async function compose({
+/**
+ * Lapisan 1 (dasar): kertas + foto + overlay PNG — TANPA teks. Dipecah dari
+ * `compose()` supaya Frame Builder admin bisa menggambar ulang dasarnya
+ * SEKALI (mahal: memuat overlay, banyak drawImage) lalu menggambar ulang
+ * teks saja berkali-kali saat klien menggeser layer (murah: cuma
+ * `fillText`). Lihat docs/blueprint/07-canvas-designer.md §3.
+ *
+ * `compose()` di bawah tetap memanggil ini persis seperti sebelum
+ * dipecah — playground & ekspor tamu TIDAK berubah sama sekali.
+ */
+export async function composeBase({
   template,
   frames,
   filterCss,
   mirror,
-  tokens = {},
   scale = 1,
-}: ComposeOptions): Promise<HTMLCanvasElement> {
+}: Omit<ComposeOptions, "tokens">): Promise<HTMLCanvasElement> {
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(template.width * scale);
   canvas.height = Math.round(template.height * scale);
@@ -181,15 +281,40 @@ export async function compose({
     // Overlay hilang bukan alasan kehilangan foto tamu.
   }
 
+  return canvas;
+}
+
+/** Lapisan 2 (teks): digambar LANGSUNG ke canvas dasar yang sudah ada —
+    dipanggil ulang tiap kali klien mengubah teks/posisi, tanpa menyentuh
+    lapisan dasar sama sekali. */
+export async function drawTextLayers(
+  canvas: HTMLCanvasElement,
+  layers: TextLayer[],
+  tokens: Record<string, string>,
+  scale: number
+): Promise<void> {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
   if (typeof document !== "undefined" && document.fonts?.ready) {
     await document.fonts.ready;
   }
-  for (const layer of template.textLayers) {
+  for (const layer of layers) {
     ctx.save();
     drawTextLayer(ctx, layer, tokens, scale);
     ctx.restore();
   }
+}
 
+export async function compose({
+  template,
+  frames,
+  filterCss,
+  mirror,
+  tokens = {},
+  scale = 1,
+}: ComposeOptions): Promise<HTMLCanvasElement> {
+  const canvas = await composeBase({ template, frames, filterCss, mirror, scale });
+  await drawTextLayers(canvas, template.textLayers, tokens, scale);
   return canvas;
 }
 

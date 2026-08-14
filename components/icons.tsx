@@ -6,7 +6,6 @@ export {
   Mic,
   Square,
   RotateCcw,
-  ArrowLeft,
   ArrowRight,
   Download,
   Image as ImageIcon,
@@ -16,6 +15,8 @@ export {
   ChevronLeft,
   ChevronRight,
   X,
+  Play,
+  Images,
 } from "lucide-react";
 
 export function RetakeIcon({ className }: { className?: string }) {

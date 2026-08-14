@@ -2,17 +2,19 @@
 
 import { useState } from "react";
 import { tokensFor } from "@/lib/event";
-import { TEMPLATES } from "@/lib/templates";
 import { useSession } from "@/lib/store";
 import { ChevronLeft, ChevronRight } from "./icons";
 
 export default function StepFrame() {
-  const { event, chooseTemplate } = useSession();
+  const { event, templates, chooseTemplate } = useSession();
   const [index, setIndex] = useState(0);
 
   if (!event) return null;
 
-  const allowed = TEMPLATES.filter((t) => event.allowedTemplates.includes(t.id));
+  // `templates` sudah persis daftar yang diizinkan event ini, dalam urutan
+  // carousel yang benar — diisi attach() dari repository (lib/repo/), bukan
+  // difilter dari katalog statis lagi. Lihat lib/store.ts.
+  const allowed = templates;
   const tokens = tokensFor(event);
   const active = allowed[index];
 
@@ -109,7 +111,7 @@ export default function StepFrame() {
 
       <button
         onClick={() => chooseTemplate(active)}
-        className="btn-primary mt-4 w-full rounded-full py-3.5 font-display text-base tracking-tight text-ink"
+        className="btn-primary btn-shape mt-4 w-full rounded-full py-3.5 font-display text-base tracking-tight text-ink"
       >
         Pilih bingkai ini
       </button>

@@ -1,0 +1,11 @@
+[
+ {
+  "id": "cli_demo",
+  "name": "Circle Snap Demo",
+  "email": "demo@circlesnap.app",
+  "createdAt": "2026-07-31T00:00:00.000Z",
+  "isStaff": true,
+  "type": "vendor",
+  "passwordHash": "6761dd3f5cf159637e3c0049e248824d:41ee97b97f69a70777a4a40ea896e3c8cff8f615daef250144ca009a6bbe33a677b0f766b0285f58a844191850d37cfb3ef9e05ecccea79532fe5b21c0b6ce3b"
+ }
+]

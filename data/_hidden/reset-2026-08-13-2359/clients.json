@@ -1,0 +1,21 @@
+[
+  {
+    "id": "cli_demo",
+    "name": "Circle Snap Demo",
+    "email": "demo@circlesnap.app",
+    "createdAt": "2026-07-31T00:00:00.000Z",
+    "isStaff": true,
+    "type": "vendor",
+    "passwordHash": "6761dd3f5cf159637e3c0049e248824d:41ee97b97f69a70777a4a40ea896e3c8cff8f615daef250144ca009a6bbe33a677b0f766b0285f58a844191850d37cfb3ef9e05ecccea79532fe5b21c0b6ce3b"
+  },
+  {
+    "name": "Achmad faizal",
+    "email": "afaizal666@gmail.com",
+    "type": "personal",
+    "passwordHash": "393d587433cda3a27f60713cf7153903:3e1a3e4715823beb0055f38322e793f9e7ab748f20267ce53cac31d12fdbcd64d24152c0d8abf853301987410182e15f34ba656cd72bc7b6adee732844c5967c",
+    "isStaff": false,
+    "id": "cli_570d5efb-ea96-4728-9f19-c4370664b87b",
+    "createdAt": "2026-08-12T16:14:35.859Z",
+    "planId": "basic"
+  }
+]

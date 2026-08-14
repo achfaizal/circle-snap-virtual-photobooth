@@ -3,14 +3,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { canvasToBlob, compose, downloadBlob } from "@/lib/compositor";
 import { bumpUsed, receiptNo, tokensFor } from "@/lib/event";
-import { getFilter } from "@/lib/filters";
+import { uploadMoment } from "@/lib/moments";
 import { useSession } from "@/lib/store";
 import { renderVoiceCard, videoExtension, videoSupported } from "@/lib/video";
+import MomentsGallery from "./MomentsGallery";
 import StripCanvas from "./StripCanvas";
 import {
   Download,
   FileImage,
   ImageIcon,
+  Images,
   Video,
   Share2,
   InstagramIcon,
@@ -63,46 +65,170 @@ function Confetti() {
 
 export default function StepResult() {
   const claimed = useRef(false);
+  const uploaded = useRef(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const [note, setNote] = useState<string | null>(null);
   const [celebrate, setCelebrate] = useState(false);
+  const [momentsOpen, setMomentsOpen] = useState(false);
+  const [quotaExhausted, setQuotaExhausted] = useState(false);
 
   const {
     event,
     template,
     frames,
-    filterId,
     mirror,
     voice,
     receipt,
+    momentId,
     finish,
+    guestName,
+    filterCss,
   } = useSession();
+
+  /* Tombol unduh & bagikan mana yang tampil — diatur klien lewat Visual
+     Builder (session.share.*). Default SEMUA menyala supaya event lama
+     yang datanya belum punya field ini tidak kehilangan tombol apa pun.
+     `shareCount` dipakai untuk lebar kolom, supaya sisa tombol tetap rapi
+     memenuhi baris walau salah satunya dimatikan. */
+  const share = {
+    downloadPng: event?.session?.share?.downloadPng ?? true,
+    downloadJpg: event?.session?.share?.downloadJpg ?? true,
+    downloadVideo: event?.session?.share?.downloadVideo ?? true,
+    instagram: event?.session?.share?.instagram ?? true,
+    whatsapp: event?.session?.share?.whatsapp ?? true,
+    nativeShare: event?.session?.share?.nativeShare ?? true,
+  };
+  const shareCount = [share.instagram, share.whatsapp, share.nativeShare].filter(Boolean).length;
+  // Sama seperti WelcomeScreen.tsx: "expired" (masa aktif 7 hari habis)
+  // JUGA mengunci galeri, beda dari "ended" yang sengaja tetap membukanya.
+  const momentsEnabled = (event?.session?.moments?.enabled ?? true) && event?.status !== "expired";
 
   /* Kuota dipotong tepat satu kali saat strip selesai, bukan per jepretan.
      Klien membeli strip — tamu yang mengulang foto tidak boleh menghabiskan
-     paket lebih cepat. Ref penjaga mencegah React Strict Mode memotong dua kali. */
+     paket lebih cepat. Ref penjaga mencegah React Strict Mode memotong dua kali.
+
+     Diklaim ke server (POST /api/quota/claim), bukan localStorage lagi —
+     lihat docs/blueprint/06-temuan-risiko.md temuan T1: localStorage
+     tidak pernah benar-benar membatasi apa pun karena tiap HP tamu mulai
+     dari 0 sendiri-sendiri. `event.id` cuma kosong untuk event lama yang
+     belum lewat repository (lib/adapters/legacy.ts) — jaring pengaman
+     lokal itu boleh dihapus begitu semua event sudah lewat repo. */
   useEffect(() => {
     if (!event || claimed.current || receipt) return;
     claimed.current = true;
-    const next = bumpUsed(event.code);
-    finish(receiptNo(event.code, next), next);
-    setCelebrate(true);
+
+    (async () => {
+      if (!event.id) {
+        const next = bumpUsed(event.code);
+        finish(receiptNo(event.code, next), next);
+        setCelebrate(true);
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/quota/claim", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ eventId: event.id }),
+        });
+
+        if (res.status === 409) {
+          setQuotaExhausted(true);
+          return;
+        }
+        if (!res.ok) throw new Error("Klaim kuota gagal.");
+
+        const data = (await res.json()) as { used: number };
+        finish(receiptNo(event.code, data.used), data.used);
+        setCelebrate(true);
+      } catch {
+        // Server tidak terjangkau (offline dsb.) — gagal pelan, jangan
+        // kunci tamu di layar kosong. Nomor struk lokal tetap keluar;
+        // konsekuensinya kuota bisa sedikit terlewati kalau ini sering
+        // terjadi, tapi itu lebih murah daripada tamu kecewa di acara
+        // orang (lihat docs/blueprint/04-arsitektur.md bagian 6).
+        const next = bumpUsed(event.code);
+        finish(receiptNo(event.code, next), next);
+        setCelebrate(true);
+      }
+    })();
   }, [event, receipt, finish]);
 
   if (!event || !template) return null;
+
+  if (quotaExhausted) {
+    return (
+      <section className="step-enter mx-auto max-w-md rounded-2xl p-8 text-center ring-1 ring-edge">
+        <h2 className="font-display text-xl">Yah, kuota baru saja habis</h2>
+        <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-smoke">
+          Paket foto untuk acara ini sudah terpakai semua tepat saat strip kamu
+          selesai. Fotomu tetap ada di kamera — tangkap layar untuk menyimpannya,
+          atau hubungi panitia kalau butuh bantuan.
+        </p>
+      </section>
+    );
+  }
 
   const render = () =>
     compose({
       template,
       frames,
-      filterCss: getFilter(filterId).css,
+      filterCss,
       mirror,
       tokens: tokensFor(event),
       scale: 1,
     });
 
-  const base = `${event.code.toLowerCase()}-${receipt ?? "strip"}`;
+  /* Otomatis tersimpan ke galeri "Momen" begitu struk keluar — tidak nunggu
+     tamu klik unduh apa pun, supaya "semua yang sudah photobooth" beneran
+     tercatat, bukan cuma yang sempat-sempatnya unduh manual. Gagal upload
+     (mis. lagi offline) sengaja diam saja — tamu tetap dapat struk dan bisa
+     unduh manual, jangan sampai fitur sampingan ini mengganggu alur utama. */
+  useEffect(() => {
+    if (!event || !template || !receipt || !momentId || uploaded.current) return;
+    uploaded.current = true;
+
+    (async () => {
+      try {
+        const photoBlob = await canvasToBlob(await render(), "image/png");
+        let videoBlob: Blob | null = null;
+        if (voice && videoSupported()) {
+          videoBlob = await renderVoiceCard({
+            strip: await render(),
+            audio: voice,
+            names: event.names,
+            date: event.date,
+            hashtag: event.hashtag,
+            decorUrl: event.theme?.decorUrl,
+            guestName: guestName || undefined,
+            brandLabel: event.brandLabel,
+            bgVideo: event.theme?.videoBg,
+            videoCard: event.theme?.videoCard,
+          }).catch(() => null);
+        }
+        await uploadMoment({
+          eventCode: event.code,
+          // ID unik per-sesi (crypto.randomUUID), BUKAN receipt — receipt
+          // cuma nomor struk lokal HP tamu ini, dua tamu beda HP bisa
+          // sama-sama dapat receipt #1 dan saling menimpa momen storage
+          // masing-masing kalau dipakai sebagai kunci di sini.
+          momentId,
+          photo: photoBlob,
+          video: videoBlob,
+          guestName: guestName || undefined,
+        });
+      } catch {
+        // offline / Blob belum siap — bukan alasan mengganggu tamu.
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [receipt, momentId]);
+
+  // receipt sudah punya prefix pendek turunan dari kode event (mis.
+  // "ENG-0001") — tidak perlu ditempel lagi dengan slug kode event penuh,
+  // itu yang bikin nama file jadi panjang ("engagement-salfaizal-...").
+  const base = receipt ?? `${event.code.toLowerCase()}-strip`;
 
   const saveImage = async (type: "image/png" | "image/jpeg") => {
     setBusy(type);
@@ -130,7 +256,11 @@ export default function StepResult() {
         names: event.names,
         date: event.date,
         hashtag: event.hashtag,
-        decorDir: event.theme?.decorDir,
+        decorUrl: event.theme?.decorUrl,
+        guestName: guestName || undefined,
+        brandLabel: event.brandLabel,
+        bgVideo: event.theme?.videoBg,
+        videoCard: event.theme?.videoCard,
         onProgress: setProgress,
       });
       downloadBlob(blob, `${base}.${videoExtension(blob)}`);
@@ -198,7 +328,7 @@ export default function StepResult() {
 
   return (
     <section className="step-enter relative grid gap-5 lg:grid-cols-[0.55fr_0.45fr] lg:items-start">
-      {celebrate && <Confetti />}
+      {celebrate && (event.theme?.effects?.confetti ?? true) && <Confetti />}
 
       {/* flex+justify-center (bukan block+mx-auto) supaya kotaknya menyusut
           mengikuti konten, bukan mengisi lebar penuh grid column. Canvas di
@@ -218,28 +348,36 @@ export default function StepResult() {
         <div>
           <h2 className="tracked mb-2.5 font-mono text-[10px] text-smoke">Download</h2>
           <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => saveImage("image/png")}
-              disabled={busy !== null}
-              className="flex items-center justify-center gap-2 rounded-full bg-paper py-3.5 text-[13px] font-medium text-ink transition active:scale-[0.98] disabled:opacity-40"
-            >
-              <ImageIcon className="h-4 w-4" />
-              {busy === "image/png" ? "Menyusun…" : "Unduh PNG"}
-            </button>
-            <button
-              onClick={() => saveImage("image/jpeg")}
-              disabled={busy !== null}
-              className="flex items-center justify-center gap-2 rounded-full py-3.5 text-[13px] text-smoke ring-1 ring-edge transition hover:text-paper active:scale-[0.98] disabled:opacity-40"
-            >
-              <FileImage className="h-4 w-4" />
-              {busy === "image/jpeg" ? "Menyusun…" : "Unduh JPG"}
-            </button>
+            {share.downloadPng && (
+              <button
+                onClick={() => saveImage("image/png")}
+                disabled={busy !== null}
+                className={`btn-shape flex items-center justify-center gap-2 rounded-full bg-paper py-3.5 text-[13px] font-medium text-ink transition active:scale-[0.98] disabled:opacity-40 ${
+                  share.downloadJpg ? "" : "col-span-2"
+                }`}
+              >
+                <ImageIcon className="h-4 w-4" />
+                {busy === "image/png" ? "Menyusun…" : "Unduh PNG"}
+              </button>
+            )}
+            {share.downloadJpg && (
+              <button
+                onClick={() => saveImage("image/jpeg")}
+                disabled={busy !== null}
+                className={`btn-shape flex items-center justify-center gap-2 rounded-full py-3.5 text-[13px] text-smoke ring-1 ring-edge transition hover:text-paper active:scale-[0.98] disabled:opacity-40 ${
+                  share.downloadPng ? "" : "col-span-2"
+                }`}
+              >
+                <FileImage className="h-4 w-4" />
+                {busy === "image/jpeg" ? "Menyusun…" : "Unduh JPG"}
+              </button>
+            )}
 
-            {voice && videoSupported() && (
+            {voice && videoSupported() && share.downloadVideo && (
               <button
                 onClick={saveVideo}
                 disabled={busy !== null}
-                className="btn-primary col-span-2 flex items-center justify-center gap-2 rounded-full py-3.5 text-[13px] font-medium text-ink transition disabled:opacity-40"
+                className="btn-primary btn-shape col-span-2 flex items-center justify-center gap-2 rounded-full py-3.5 text-[13px] font-medium text-ink transition disabled:opacity-40"
               >
                 <Video className="h-4 w-4" />
                 {busy === "video"
@@ -248,35 +386,46 @@ export default function StepResult() {
               </button>
             )}
 
-            <div className="col-span-2 grid grid-cols-3 gap-2">
-              <button
-                onClick={() => shareToApp("instagram")}
-                disabled={busy !== null}
-                aria-label="Bagikan ke Instagram"
-                className="flex flex-col items-center gap-1 rounded-full py-3 text-smoke ring-1 ring-edge transition hover:text-paper hover:ring-flash active:scale-[0.98] disabled:opacity-40"
+            {shareCount > 0 && (
+              <div
+                className="col-span-2 grid gap-2"
+                style={{ gridTemplateColumns: `repeat(${shareCount}, minmax(0, 1fr))` }}
               >
-                <InstagramIcon className="h-5 w-5" />
-                <span className="font-mono text-[9px]">Instagram</span>
-              </button>
-              <button
-                onClick={() => shareToApp("whatsapp")}
-                disabled={busy !== null}
-                aria-label="Bagikan ke WhatsApp"
-                className="flex flex-col items-center gap-1 rounded-full py-3 text-smoke ring-1 ring-edge transition hover:text-paper hover:ring-flash active:scale-[0.98] disabled:opacity-40"
-              >
-                <WhatsappIcon className="h-5 w-5" />
-                <span className="font-mono text-[9px]">WhatsApp</span>
-              </button>
-              <button
-                onClick={shareMore}
-                disabled={busy !== null}
-                aria-label="Bagikan ke aplikasi lain"
-                className="flex flex-col items-center gap-1 rounded-full py-3 text-smoke ring-1 ring-edge transition hover:text-paper hover:ring-flash active:scale-[0.98] disabled:opacity-40"
-              >
-                <Share2 className="h-5 w-5" />
-                <span className="font-mono text-[9px]">Lainnya</span>
-              </button>
-            </div>
+                {share.instagram && (
+                  <button
+                    onClick={() => shareToApp("instagram")}
+                    disabled={busy !== null}
+                    aria-label="Bagikan ke Instagram"
+                    className="flex flex-col items-center gap-1 rounded-full py-3 text-smoke ring-1 ring-edge transition hover:text-paper hover:ring-flash active:scale-[0.98] disabled:opacity-40"
+                  >
+                    <InstagramIcon className="h-5 w-5" />
+                    <span className="font-mono text-[9px]">Instagram</span>
+                  </button>
+                )}
+                {share.whatsapp && (
+                  <button
+                    onClick={() => shareToApp("whatsapp")}
+                    disabled={busy !== null}
+                    aria-label="Bagikan ke WhatsApp"
+                    className="flex flex-col items-center gap-1 rounded-full py-3 text-smoke ring-1 ring-edge transition hover:text-paper hover:ring-flash active:scale-[0.98] disabled:opacity-40"
+                  >
+                    <WhatsappIcon className="h-5 w-5" />
+                    <span className="font-mono text-[9px]">WhatsApp</span>
+                  </button>
+                )}
+                {share.nativeShare && (
+                  <button
+                    onClick={shareMore}
+                    disabled={busy !== null}
+                    aria-label="Bagikan ke aplikasi lain"
+                    className="flex flex-col items-center gap-1 rounded-full py-3 text-smoke ring-1 ring-edge transition hover:text-paper hover:ring-flash active:scale-[0.98] disabled:opacity-40"
+                  >
+                    <Share2 className="h-5 w-5" />
+                    <span className="font-mono text-[9px]">Lainnya</span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {note && (
@@ -286,7 +435,21 @@ export default function StepResult() {
             </p>
           )}
         </div>
+
+        {momentsEnabled && (
+          <button
+            onClick={() => setMomentsOpen(true)}
+            className="btn-shape flex w-full items-center justify-center gap-2 rounded-full py-3 text-[13px] text-smoke ring-1 ring-edge transition hover:text-paper"
+          >
+            <Images className="h-4 w-4" />
+            Lihat Momen Lainnya
+          </button>
+        )}
       </div>
+
+      {momentsOpen && momentsEnabled && (
+        <MomentsGallery event={event} onClose={() => setMomentsOpen(false)} />
+      )}
     </section>
   );
 }

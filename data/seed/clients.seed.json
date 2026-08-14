@@ -1,0 +1,10 @@
+[
+  {
+    "id": "cli_demo",
+    "name": "Circle Snap Demo",
+    "email": "demo@circlesnap.app",
+    "createdAt": "2026-07-31T00:00:00.000Z",
+    "isStaff": true,
+    "type": "vendor"
+  }
+]
