@@ -1,9 +1,9 @@
 /**
  * Pesanan & buku besar kuota — Langkah 8 rencana Tahap 2 (D-26). Tabel
  * `orders` (dok 02 §4.2) + `quota_ledger` (Tahap 1). Rute API di
- * `/api/admin/purchase-orders` (BUKAN `/api/admin/orders` — itu jalur
- * pembelian klien lama, JSON, lihat catatan tabrakan rute di rencana
- * Tahap 2).
+ * `/api/admin/orders` — direname dari `/api/admin/purchase-orders` di
+ * Langkah 11 Tahap 3, setelah rute JSON lama pemilik nama itu
+ * (pembelian klien) dipensiunkan.
  */
 import { and, eq, sql } from "drizzle-orm";
 import { db } from "../client";
@@ -17,6 +17,12 @@ export async function listOrders() {
 export async function getOrder(id: string) {
   const [row] = await db.select().from(orders).where(eq(orders.id, id));
   return row ?? null;
+}
+
+/** K5 — riwayat pesanan MILIK SATU akun (dipakai /app/billing), beda
+    dari listOrders() di atas yang staf-saja dan lintas-akun. */
+export async function listOrdersByAccount(accountId: string) {
+  return db.select().from(orders).where(eq(orders.accountId, accountId)).orderBy(sql`${orders.createdAt} DESC`);
 }
 
 export interface CreateOrderInput {
