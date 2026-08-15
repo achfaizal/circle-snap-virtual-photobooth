@@ -102,18 +102,27 @@ export function hashPassword(password: string): string {
   return `${salt}:${hash}`;
 }
 
+/** Bandingan generik terhadap hash format "salt:hash" hex (scrypt) —
+    dipisah dari verifyClientPassword supaya lib/clientAuth.ts (sesi
+    /app/*, Tahap 3) dan verifikasi users.password_hash (login staf,
+    juga Tahap 3) bisa dipakai ulang tanpa butuh bentuk `Client` JSON. */
+export function verifyPasswordHash(hash: string | null | undefined, password: string): boolean {
+  if (!hash) return false;
+  const [salt, storedHash] = hash.split(":");
+  if (!salt || !storedHash) return false;
+  const attempt = scryptSync(password, salt, 64).toString("hex");
+  const bufA = Buffer.from(attempt, "hex");
+  const bufB = Buffer.from(storedHash, "hex");
+  if (bufA.length !== bufB.length) return false;
+  return timingSafeEqual(bufA, bufB);
+}
+
 /** Klien BARU (punya passwordHash) diverifikasi terhadap hash miliknya
     sendiri. Klien LAMA (passwordHash kosong, mis. cli_demo) jatuh balik
     ke satu ADMIN_PASSWORD environment — lihat catatan di atas file. */
 export function verifyClientPassword(client: Client, password: string): boolean {
   if (!client.passwordHash) return verifyPassword(password);
-  const [salt, storedHash] = client.passwordHash.split(":");
-  if (!salt || !storedHash) return false;
-  const hash = scryptSync(password, salt, 64).toString("hex");
-  const bufA = Buffer.from(hash, "hex");
-  const bufB = Buffer.from(storedHash, "hex");
-  if (bufA.length !== bufB.length) return false;
-  return timingSafeEqual(bufA, bufB);
+  return verifyPasswordHash(client.passwordHash, password);
 }
 
 /** Dipanggil di baris pertama tiap route /api/admin/* yang TIDAK perlu
