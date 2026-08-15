@@ -66,6 +66,12 @@ function Confetti() {
 export default function StepResult() {
   const claimed = useRef(false);
   const uploaded = useRef(false);
+  // Kunci idempoten klaim kuota (dok 02 §3.5, Langkah 10 Tahap 3) —
+  // dibuat SEKALI per pemasangan komponen (lazy init, bukan di dalam
+  // effect) supaya kalau blok try/catch di bawah retry pemanggilan
+  // fetch, sessionId-nya TETAP SAMA, bukan dianggap klaim baru oleh
+  // server.
+  const sessionIdRef = useRef<string>(typeof crypto !== "undefined" ? crypto.randomUUID() : String(Date.now()));
   const [busy, setBusy] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const [note, setNote] = useState<string | null>(null);
@@ -130,7 +136,7 @@ export default function StepResult() {
         const res = await fetch("/api/quota/claim", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ eventId: event.id }),
+          body: JSON.stringify({ eventId: event.id, sessionId: sessionIdRef.current }),
         });
 
         if (res.status === 409) {
@@ -139,8 +145,14 @@ export default function StepResult() {
         }
         if (!res.ok) throw new Error("Klaim kuota gagal.");
 
-        const data = (await res.json()) as { used: number };
-        finish(receiptNo(event.code, data.used), data.used);
+        // API baru (Langkah 9 Tahap 1) mengembalikan `remaining` (sisa
+        // kuota SETELAH klaim ini), bukan `used` — dihitung balik di sini
+        // supaya receiptNo() (nomor urut struk, murni kosmetik, BUKAN
+        // penegak kuota) tidak perlu mengubah kontrak claimQuota.ts yang
+        // sudah teruji K1.
+        const data = (await res.json()) as { remaining: number; alreadyClaimed: boolean };
+        const used = Math.max(0, event.quota - data.remaining);
+        finish(receiptNo(event.code, used), used);
         setCelebrate(true);
       } catch {
         // Server tidak terjangkau (offline dsb.) — gagal pelan, jangan

@@ -47,7 +47,7 @@ import { effectiveStatus } from "../services/eventLifecycle";
     (`canvasFontDisplay`) kenapa dua-duanya perlu ada. "jakarta" sengaja
     tidak dipetakan — itu representasi "tanpa override" (event pakai
     default aplikasi), FONT_DISPLAY_CSS["jakarta"] = undefined = benar. */
-const FONT_DISPLAY_CSS: Record<string, string> = {
+export const FONT_DISPLAY_CSS: Record<string, string> = {
   playfair: "var(--font-playfair)",
   cormorant: "var(--font-cormorant)",
   marcellus: "var(--font-marcellus)",
@@ -61,7 +61,7 @@ const FONT_DISPLAY_CSS: Record<string, string> = {
   lora: "var(--font-lora)",
 };
 
-const CANVAS_FONT_CSS: Record<string, string> = {
+export const CANVAS_FONT_CSS: Record<string, string> = {
   playfair: "var(--canvas-font-playfair)",
   cormorant: "var(--canvas-font-cormorant)",
   marcellus: "var(--canvas-font-marcellus)",

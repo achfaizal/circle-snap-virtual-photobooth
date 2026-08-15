@@ -8,6 +8,7 @@ import type { EventConfig } from "../event";
 import type { Template } from "../templates";
 import { assetMap, toEventConfig, toTemplates } from "./legacy";
 import type { Event } from "../models/event";
+import { resolvePostgresPlaygroundBySlug } from "./resolvePostgresPlayground";
 
 export interface ResolvedPlayground {
   event: EventConfig;
@@ -51,6 +52,13 @@ async function buildResolved(event: Event): Promise<ResolvedPlayground | null> {
 export async function resolvePlaygroundBySlug(
   slug: string
 ): Promise<ResolvedPlayground | null> {
+  // Postgres dicoba LEBIH DULU (Langkah 10 Tahap 3) — acara baru semua
+  // lewat /app/*, hidup di sana. Jatuh ke JSON di bawah kalau tidak
+  // ketemu (jaring pengaman rollback, bukan jalur normal — 0 event JSON
+  // per temuan awal Tahap 3, lihat rencana §Context).
+  const pg = await resolvePostgresPlaygroundBySlug(slug);
+  if (pg) return pg;
+
   const repo = getRepo();
   const event = await repo.events.getBySlug(slug);
   if (!event) return null;
