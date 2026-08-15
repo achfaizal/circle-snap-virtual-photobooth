@@ -239,10 +239,13 @@ export default function AdminLoginPage() {
           {busy ? "Memeriksa…" : "Masuk ke Circle Snap"}
         </motion.button>
 
+        {/* D-25 — /admin/* sekarang staf-saja (Langkah 1/11 Tahap 3),
+            tidak ada lagi "Daftar" mandiri di sini. Klien daftar di
+            /app/register. */}
         <p style={{ textAlign: "center", marginTop: 16, fontSize: 13, color: "#71717A", fontWeight: 500 }}>
-          Belum punya akun?{" "}
-          <Link href="/admin/register" style={{ color: "var(--a-clr-primary)", fontWeight: 800, textDecoration: "none" }}>
-            Daftar
+          Klien acara?{" "}
+          <Link href="/app/login" style={{ color: "var(--a-clr-primary)", fontWeight: 800, textDecoration: "none" }}>
+            Masuk di sini
           </Link>
         </p>
 

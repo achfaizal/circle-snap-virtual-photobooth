@@ -44,7 +44,7 @@ export default function SystemFramesManager({ initial }: { initial: FrameRow[] }
       const body = new FormData();
       body.set("file", file);
       body.set("name", name);
-      const res = await fetch("/api/admin/system-frames", { method: "POST", body });
+      const res = await fetch("/api/admin/frames", { method: "POST", body });
       const data = await res.json();
       if (!res.ok) {
         setLastReport(data.report ?? null);
@@ -75,7 +75,7 @@ export default function SystemFramesManager({ initial }: { initial: FrameRow[] }
 
   async function toggleArchive(row: FrameRow) {
     const nextStatus = row.status === "active" ? "archived" : "active";
-    const res = await fetch(`/api/admin/system-frames/${row.id}`, {
+    const res = await fetch(`/api/admin/frames/${row.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: nextStatus }),

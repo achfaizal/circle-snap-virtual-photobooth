@@ -51,7 +51,7 @@ export default function PurchaseOrderDetail({
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch(`/api/admin/purchase-orders/${order.id}/approve`, { method: "POST" });
+      const res = await fetch(`/api/admin/orders/${order.id}/approve`, { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Gagal menyetujui.");
       setStatus(data.order.status);
@@ -66,7 +66,7 @@ export default function PurchaseOrderDetail({
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch(`/api/admin/purchase-orders/${order.id}/reject`, {
+      const res = await fetch(`/api/admin/orders/${order.id}/reject`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reason: rejectReason }),

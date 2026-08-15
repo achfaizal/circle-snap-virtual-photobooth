@@ -59,7 +59,7 @@ export default function PurchaseOrdersList({ initial }: { initial: OrderRow[] })
           rows.map((o) => (
             <a
               key={o.id}
-              href={`/admin/purchase-orders/${o.id}`}
+              href={`/admin/orders/${o.id}`}
               className="t2-sheet-section flex items-center justify-between"
               style={{ textDecoration: "none" }}
             >

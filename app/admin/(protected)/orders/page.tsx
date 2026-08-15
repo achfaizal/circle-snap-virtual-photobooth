@@ -6,8 +6,9 @@ import PurchaseOrdersList from "@/components/admin/t2/PurchaseOrdersList";
 
 /**
  * Pesanan & verifikasi pembayaran — Langkah 9 rencana Tahap 2 (D-26).
- * `/admin/purchase-orders`, BUKAN `/admin/orders` (itu jalur JSON lama
- * dipakai klien — lihat catatan tabrakan rute di rencana Tahap 2).
+ * Direname dari `/admin/purchase-orders` ke nama BRD asli `/admin/orders`
+ * di Langkah 11 Tahap 3 — jalur JSON lama yang dulu memakai URL ini
+ * (portal klien) sudah dipensiunkan, tabrakan rutenya sudah tidak ada.
  */
 export default async function PurchaseOrdersPage() {
   const clientId = await getSessionClientId();

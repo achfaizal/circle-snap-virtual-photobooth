@@ -1,36 +1,42 @@
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { getSessionClientId } from "@/lib/adminAuth";
 import { getRepo } from "@/lib/repo";
-import FrameLibrary from "@/components/admin/FrameLibrary";
+import { listSystemFrames } from "@/lib/db/queries/systemFrames";
+import SystemFramesManager from "@/components/admin/t2/SystemFramesManager";
 
-export default async function FramesLibraryPage() {
+/**
+ * Bingkai sistem — Langkah 4 Tahap 2. Direname dari `/admin/system-frames`
+ * ke nama BRD asli `/admin/frames` di Langkah 11 Tahap 3 — rute lama
+ * (JSON, dipakai bersama klien) sudah dipensiunkan, tabrakan rutenya
+ * sudah tidak ada.
+ */
+export default async function SystemFramesPage() {
   const clientId = await getSessionClientId();
-  if (!clientId) redirect("/admin/login");
+  if (!clientId) notFound();
+  const me = await getRepo().clients.getById(clientId);
+  if (!me?.isStaff) notFound();
 
-  const repo = getRepo();
-  const client = await repo.clients.getById(clientId);
-  if (!client) redirect("/admin/login");
-
-  // Klien melihat pustaka BAWAAN (clientId null — aset Circle Snap yang
-  // boleh dipakai semua orang) DITAMBAH bingkai miliknya sendiri.
-  // Sebelumnya hanya yang bawaan, jadi bingkai hasil upload klien tidak
-  // pernah muncul di halaman ini sama sekali.
-  const [sharedFrames, ownFrames, sharedAssets, ownAssets] = await Promise.all([
-    repo.frames.list(null),
-    client.isStaff ? Promise.resolve([]) : repo.frames.list(client.id),
-    repo.assets.list(null),
-    client.isStaff ? Promise.resolve([]) : repo.assets.list(client.id),
-  ]);
-
-  const assetUrls: Record<string, string> = {};
-  for (const a of [...sharedAssets, ...ownAssets]) assetUrls[a.id] = a.url;
+  const frames = await listSystemFrames();
 
   return (
-    <FrameLibrary
-      frames={[...sharedFrames, ...ownFrames]}
-      assetUrls={assetUrls}
-      ownedIds={ownFrames.map((f) => f.id)}
-      canDeleteShared={Boolean(client.isStaff)}
-    />
+    <div>
+      <h1 style={{ fontSize: 24, fontWeight: 600, letterSpacing: "-0.02em", color: "var(--a-clr-text)" }}>
+        Bingkai Sistem
+      </h1>
+      <p style={{ fontSize: 14, color: "var(--a-clr-text-muted)", marginTop: 4, marginBottom: 24 }}>
+        Pustaka bingkai bawaan — divalidasi otomatis (V1–V8) sebelum tersimpan.
+        Beda dari Pustaka Bingkai lama, ini yang dipasang ke Template.
+      </p>
+      <SystemFramesManager
+        initial={frames.map((f) => ({
+          id: f.id,
+          name: f.name,
+          status: f.status,
+          slotCount: f.slotCount,
+          width: f.width,
+          height: f.height,
+        }))}
+      />
+    </div>
   );
 }
