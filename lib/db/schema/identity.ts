@@ -64,6 +64,13 @@ export const users = pgTable(
     ...baseColumns,
     email: citext("email").notNull().unique(),
     emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
+    // Verifikasi email minimal (Tahap 3, koreksi 15 Agu 2026 — dijawab
+    // sebelumnya "anggap otomatis terverifikasi", DIBATALKAN pemilik
+    // produk, diganti alur token sungguhan). Hash SHA-256 disimpan
+    // (bukan token mentah) — pola sama account_invites.tokenHash.
+    // NULL kalau belum pernah minta verifikasi atau sudah terverifikasi.
+    emailVerificationTokenHash: text("email_verification_token_hash"),
+    emailVerificationExpiresAt: timestamp("email_verification_expires_at", { withTimezone: true }),
     passwordHash: text("password_hash").notNull(),
     fullName: varchar("full_name", { length: 100 }).notNull(),
     phoneWa: varchar("phone_wa", { length: 20 }).notNull(),

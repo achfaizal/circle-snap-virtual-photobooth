@@ -5,12 +5,15 @@
  * menerbitkan ACARA). Kutipan riset BRD: "Gerbang 7 dan 11 tidak ada di
  * implementasi sekarang dan wajib ditambahkan."
  *
- * Poin 10 (email terverifikasi) SECARA SENGAJA formalitas — keputusan
- * pemilik produk: tidak ada infrastruktur kirim-email di aplikasi ini,
- * emailVerifiedAt diisi otomatis saat daftar (app/api/app/register).
- * Poin ini tetap DIHITUNG di sini (BRD memang menyebutnya), bukan
- * dihapus diam-diam — kalau nanti verifikasi sungguhan dibangun, gerbang
- * ini langsung ikut berlaku tanpa perlu ditulis ulang.
+ * Poin 10 (email terverifikasi) — koreksi 15 Agu 2026: SUNGGUHAN
+ * ditegakkan, bukan formalitas. Keputusan sebelumnya ("anggap otomatis
+ * terverifikasi saat daftar") DIBATALKAN pemilik produk begitu ketahuan
+ * ringkasan pekerjaan tidak cocok jawaban aslinya. Alur token minimal
+ * dibangun (tanpa SMTP — link ditampilkan di /app/verify-email, mode
+ * dev): app/api/app/verify-email/route.ts +
+ * lib/db/queries/accounts.ts (createEmailVerificationToken/
+ * verifyEmailToken). `emailVerifiedAt` sekarang cuma terisi lewat
+ * jalur itu, bukan otomatis lagi saat daftar.
  */
 import { eq, and, sql } from "drizzle-orm";
 import { db } from "../db/client";

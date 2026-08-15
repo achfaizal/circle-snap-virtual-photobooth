@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { hashPassword } from "@/lib/adminAuth";
 import { CLIENT_COOKIE_NAME, createClientSessionToken } from "@/lib/clientAuth";
-import { getUserByEmail } from "@/lib/db/queries/accounts";
+import { createEmailVerificationToken, getUserByEmail } from "@/lib/db/queries/accounts";
 import { normalizeWhatsapp } from "@/lib/phone";
 import { slugify } from "@/lib/slug";
 import { db } from "@/lib/db/client";
@@ -79,15 +79,19 @@ export async function POST(request: Request) {
       passwordHash: hashPassword(password),
       fullName: name,
       phoneWa: `+${whatsapp}`,
-      // Keputusan pemilik produk (Langkah 9 Tahap 3): TIDAK ADA
-      // infrastruktur kirim-email sama sekali di aplikasi ini —
-      // dianggap terverifikasi otomatis saat daftar. Gerbang publikasi
-      // poin 10 (dok 05 §5.5) tetap ADA di kode, tapi jadi formalitas —
-      // tidak menegakkan apa-apa sungguhan. Dicatat jujur, bukan
-      // disembunyikan.
-      emailVerifiedAt: new Date(),
+      // Koreksi 15 Agu 2026: TIDAK lagi otomatis terverifikasi.
+      // emailVerifiedAt tetap NULL sampai token sungguhan diverifikasi
+      // lewat /app/verify-email — lihat createEmailVerificationToken().
     })
     .returning({ id: users.id });
+
+  // Token dibuat SAAT REGISTRASI (bukan ditunda sampai user membuka
+  // /app/verify-email) — sesuai permintaan eksplisit, walau raw token-nya
+  // di sini tidak dipakai (halaman verifikasi menerbitkan token baru
+  // saat dibuka, lihat catatan "tidak bisa diambil ulang dari hash" di
+  // createEmailVerificationToken()). Baris ini murni memenuhi "token
+  // dibuat saat registrasi" sebagai jejak nyata di DB sejak akun lahir.
+  await createEmailVerificationToken(userRow.id);
 
   const [accountRow] = await db
     .insert(accounts)

@@ -46,11 +46,19 @@ maupun builder).
    beda masa aktif.
 4. **Gerbang publikasi poin 10 (email terverifikasi)** — 3 opsi (bangun
    verifikasi minimal / lewati poin ini / anggap semua terverifikasi
-   otomatis). Dijawab: **anggap terverifikasi otomatis**. `emailVerifiedAt`
-   diisi saat daftar (`/api/app/register`) — TIDAK ADA infrastruktur
-   kirim-email sungguhan di aplikasi ini. Poin 10 tetap ada di kode
-   (BRD memang menyebutnya) tapi murni formalitas, tidak menegakkan
-   apa-apa nyata. Dicatat jujur, bukan disembunyikan.
+   otomatis). Dijawab awalnya: **anggap terverifikasi otomatis** — TAPI
+   ringkasan pekerjaan yang saya tulis salah mengutip jawaban ini (lihat
+   riwayat percakapan), dan setelah dicek ulang bersama pemilik produk,
+   **DIBATALKAN dan diganti opsi 1** (verifikasi minimal sungguhan).
+   Sekarang: token dibuat saat daftar (hash SHA-256 disimpan, bukan
+   token mentah — `lib/db/queries/accounts.ts`
+   `createEmailVerificationToken`/`verifyEmailToken`), link ditampilkan
+   langsung di `/app/verify-email` (mode dev, TIDAK ADA SMTP — sama pola
+   "dev-lokal saja" dengan bukti transfer), `GET /api/app/verify-email?token=`
+   menandai `emailVerifiedAt` lalu redirect. `emailVerifiedAt` TIDAK
+   LAGI otomatis terisi saat daftar. Diuji eksplisit: gerbang poin 10
+   gagal saat belum verifikasi, hilang dari daftar gagal begitu
+   diverifikasi — bukan cuma baca kode.
 
 ## 3. Keputusan teknis yang saya buat sendiri, dicatat di sini
 
@@ -158,6 +166,13 @@ maupun builder).
   - `scripts/test-frame-validator.ts` (V1-V8, PNG asli lolos + 4 skenario rusak ditolak)
   - `scripts/test-order-lifecycle.ts` (pemisahan komit `approveOrder()`)
   - `scripts/test-account-migration.ts` (baru, Langkah 1 — migrasi + hierarki peran)
+- **Verifikasi email (koreksi)**: daftar akun baru → `emailVerifiedAt`
+  NULL (dicek langsung ke DB) → `POST /api/app/verify-email` terbitkan
+  token → `GET .../verify-email?token=...` menandai terverifikasi,
+  redirect sukses → klik ulang token yang sama ditolak (`invalid`,
+  sekali pakai) → token asal-asalan ditolak → gerbang poin 10 diuji
+  langsung memakai `canPublishEvent()`: gagal saat `emailVerifiedAt`
+  NULL, poin 10 hilang dari daftar gagal begitu diverifikasi.
 - **Alur penuh nyata** (Playwright, klik browser sungguhan + verifikasi
   langsung ke DB): daftar akun vendor baru → staf setujui top-up dompet →
   buat acara (wizard 3 langkah, alokasi 50 strip dari dompet) → pilih

@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Plus } from "lucide-react";
+import { Plus, Mail } from "lucide-react";
 import { getSessionAccount } from "@/lib/clientAuth";
 import { listEventsByAccountId } from "@/lib/db/queries/events";
-import { getAccountById } from "@/lib/db/queries/accounts";
+import { getAccountById, getUserById } from "@/lib/db/queries/accounts";
 
 /**
  * Dashboard /app — isi bercabang per dok 05 §2:
@@ -23,12 +23,18 @@ export default async function AppDashboardPage() {
   const session = await getSessionAccount();
   if (!session) redirect("/app/login");
 
+  const user = await getUserById(session.userId);
+  const verifyBanner = !user?.emailVerifiedAt ? <VerifyEmailBanner /> : null;
+
   if (session.role === "operator") {
     return (
-      <EmptyState
-        title="Belum ada acara yang ditugaskan"
-        body="Acara yang kamu tangani akan muncul di sini begitu pemilik akun menugaskanmu."
-      />
+      <div>
+        {verifyBanner}
+        <EmptyState
+          title="Belum ada acara yang ditugaskan"
+          body="Acara yang kamu tangani akan muncul di sini begitu pemilik akun menugaskanmu."
+        />
+      </div>
     );
   }
 
@@ -41,6 +47,7 @@ export default async function AppDashboardPage() {
   if (account.type === "personal") {
     return (
       <div>
+        {verifyBanner}
         <PageHeader title="Acaramu" />
         {events.length === 0 ? (
           <CreateFirstEventCard />
@@ -65,6 +72,7 @@ export default async function AppDashboardPage() {
 
   return (
     <div>
+      {verifyBanner}
       <PageHeader title="Dashboard" />
 
       <div
@@ -109,6 +117,30 @@ export default async function AppDashboardPage() {
         </>
       )}
     </div>
+  );
+}
+
+function VerifyEmailBanner() {
+  return (
+    <Link
+      href="/app/verify-email"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "10px 14px",
+        borderRadius: 10,
+        background: "#FEF3C7",
+        border: "1px solid #FDE68A",
+        marginBottom: 16,
+        textDecoration: "none",
+      }}
+    >
+      <Mail size={15} color="#92400E" />
+      <span style={{ fontSize: 12.5, color: "#92400E", fontWeight: 700 }}>
+        Email belum diverifikasi — wajib sebelum acara bisa diterbitkan (gerbang poin 10). Verifikasi sekarang →
+      </span>
+    </Link>
   );
 }
 
