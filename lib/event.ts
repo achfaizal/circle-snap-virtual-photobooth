@@ -196,7 +196,23 @@ export interface EventConfig {
   /** Override teks antarmuka. Kosong = pakai default lib/copy.ts.
       Dibaca lewat resolveCopy(), bukan langsung. */
   copy?: CopyOverrides;
+
+  /** Variabel DINAMIS per-template (Tahap 3 D-12, koreksi 16 Agu) —
+      isi `event_variable_values` KLIEN, dipetakan dari definisi
+      `template_variables` MILIK template acara. Kosong untuk event
+      lama/hardcode (EVENTS di bawah). `key` yang bertabrakan dengan 5
+      token tetap (names/date/venue/hashtag/code) SENGAJA tidak dobel
+      ditampilkan di WelcomeScreen — lihat STANDARD_TOKEN_KEYS di bawah
+      dan komponen yang memakainya. */
+  variables?: { key: string; label: string; value: string; usedIn: string[] }[];
 }
+
+/** 5 token tetap yang sudah punya field khusus di EventConfig sendiri
+    (names/date/venue/hashtag/code) — dipakai dua tempat: tokensFor()
+    supaya nilai FIELD TETAP selalu menang kalau kebetulan ada variabel
+    custom bernama sama, dan WelcomeScreen supaya variabel dinamis yang
+    namanya sama tidak dobel ditampilkan. */
+export const STANDARD_TOKEN_KEYS = new Set(["names", "date", "venue", "hashtag", "code"]);
 
 // Event wedding (SALMA-FAIZAL) sengaja dikeluarkan dari daftar aktif per
 // permintaan user — situs sekarang untuk satu klien (lamaran), bukan
@@ -256,8 +272,17 @@ export function getEvent(code: string): EventConfig | undefined {
   return EVENTS.find((e) => e.code.toLowerCase() === code.toLowerCase());
 }
 
+/** Koreksi 16 Agu 2026 — dulu cuma 5 token tetap, sekarang juga
+    mencampur `ev.variables` (template_variables dinamis, Tahap 3
+    D-12) supaya `{{student_name}}` dkk di layer teks bingkai benar-benar
+    tersubstitusi lib/compositor.ts, bukan diam-diam kosong. Field
+    TETAP di-spread BELAKANGAN supaya selalu menang kalau kebetulan ada
+    variabel custom bernama sama (mis. "names") — satu sumber kebenaran
+    per key standar. */
 export function tokensFor(ev: EventConfig): Record<string, string> {
+  const custom = Object.fromEntries((ev.variables ?? []).map((v) => [v.key, v.value]));
   return {
+    ...custom,
     names: ev.names,
     date: ev.date,
     venue: ev.venue,

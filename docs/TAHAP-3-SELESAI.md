@@ -101,17 +101,25 @@ maupun builder).
 
 ## 5. Keterbatasan jujur yang disengaja, bukan lupa
 
-- **Compositor belum mengenal variabel dinamis di luar 5 token tetap**
-  (`{{names}} {{date}} {{venue}} {{hashtag}} {{code}}`,
-  `lib/event.ts tokensFor()`/`lib/compositor.ts`). Bingkai yang layer
-  teksnya memuat token template_variables LAIN (mis. `{{student_name}}`)
-  tidak akan tersubstitusi. Field-field TETAP acara (nama tampil/tanggal
-  tampil/lokasi/tagar, dok 03 §5.1) sudah dipetakan langsung ke 4 dari 5
-  token itu sehingga sebagian besar kasus tetap aman — tapi variabel
-  benar-benar baru per-template (mis. jurusan/universitas di Wisuda)
-  murni tersimpan datanya, belum tercetak di bingkai. Di luar 8 butir
-  Tahap 3 (yang eksplisit "Visual Builder MEMBACA template_variables",
-  bukan "compositor menggambar token sembarang").
+- **[DIPERBAIKI 16 Agu 2026]** ~~Compositor belum mengenal variabel
+  dinamis~~ — temuan ini semula ditulis terlalu sempit (cuma soal
+  bingkai) dan dampaknya lebih besar dari yang dicatat: booth tamu
+  TIDAK PERNAH mengambil `event_variable_values` sama sekali (bukan
+  cuma "tidak tersubstitusi di bingkai") — `EventConfig` tidak punya
+  field untuk itu, `WelcomeScreen.tsx` tidak tahu cara menampilkannya.
+  Artinya template kategori non-wedding (Wisuda, Ulang Tahun, dst.)
+  SECARA PRAKTIK belum layak dijual ke klien sungguhan — isian
+  Visual Builder tersimpan tapi hilang senyap dari pengalaman tamu.
+  Diperbaiki cakupan minimal (keputusan pemilik produk): `EventConfig.variables`
+  baru (`lib/event.ts`), diisi `resolvePostgresPlayground.ts` dari
+  `event_variable_values` + label/usedIn dari snapshot beku,
+  `tokensFor()` mencampurnya ke token compositor (bingkai), `WelcomeScreen.tsx`
+  menampilkan daftar generik label:nilai untuk `usedIn='welcome'` di
+  luar 5 token standar. Diuji nyata: template Wisuda Formal (4 variabel
+  custom) tampil lengkap di booth. **Kartu video pesan suara & teks
+  bagikan (`usedIn='video_card'`/`'share'`) SENGAJA masih belum
+  disambungkan** — gap terpisah, dampaknya lebih kecil (bukan bagian
+  pengalaman utama tamu), didokumentasikan di sini supaya tidak lupa.
 - **Voice max duration tidak dibatasi plafon paket** — dicatat langsung
   di UI builder ("belum ditegakkan di Tahap 3").
 - **`/app/settings`, galeri Momen di `/app/*`** — belum dibangun, di

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { EventConfig } from "@/lib/event";
+import { STANDARD_TOKEN_KEYS } from "@/lib/event";
 import { resolveCopy } from "@/lib/copy";
 import { useSession } from "@/lib/store";
 import { Images } from "./icons";
@@ -235,6 +236,22 @@ export default function WelcomeScreen({
         <p className="mt-8 max-w-xs text-[14px] leading-relaxed text-smoke">
           {event.greeting}
         </p>
+
+        {/* Variabel dinamis per-template (Tahap 3 D-12, koreksi 16 Agu)
+            — daftar generik label:nilai untuk variabel usedIn='welcome'
+            DI LUAR 5 token standar (yang sudah tampil lewat
+            event.names/event.date di atas, tidak boleh dobel). Tata
+            letak SENGAJA generik sama untuk semua template (K11/AB-15:
+            klien ubah isi bukan desain) — bukan layout custom per
+            template. Baris dengan nilai kosong disembunyikan, bukan
+            ditampilkan label tanpa isi. */}
+        {event.variables
+          ?.filter((v) => v.usedIn.includes("welcome") && !STANDARD_TOKEN_KEYS.has(v.key) && v.value.trim())
+          .map((v) => (
+            <p key={v.key} className="mt-2 max-w-xs text-[13px] leading-relaxed text-smoke">
+              <span className="text-flash">{v.label}:</span> {v.value}
+            </p>
+          ))}
 
         {/* Nama tamu diminta di sini, bukan di step terpisah — supaya
             pengantin nanti tahu tiap foto/pesan suara di galeri Momen itu

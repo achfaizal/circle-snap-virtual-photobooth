@@ -6,18 +6,20 @@
  * hidup — itulah inti K9/AB-14: perbaikan template setelah publikasi
  * tidak boleh mengubah tampilan acara yang sedang berjalan.
  *
- * ⚠️ Keterbatasan jujur: `lib/event.ts` tokensFor()/lib/compositor.ts
- * cuma mengenal 5 token tetap ({{names}} {{date}} {{venue}} {{hashtag}}
- * {{code}}) — bukan variabel dinamis sembarang (mis. {{student_name}}).
- * Cocok untuk field TETAP events (displayNames/dateDisplay/venue/
- * hashtag, dok 03 §5.1), tapi bingkai yang text_layers-nya memuat token
- * template_variables SELAIN lima itu TIDAK akan tersubstitusi compositor
- * sekarang — di luar cakupan 8 butir Tahap 3 (bukan diam-diam
- * disembunyikan, dicatat di sini eksplisit sebagai gap).
+ * Koreksi 16 Agu 2026: variabel dinamis (template_variables, D-12)
+ * SEKARANG disambungkan ke EventConfig.variables — diambil dari
+ * event_variable_values (nilai KLIEN, bisa berubah), dipasangkan
+ * dengan label/usedIn dari snapshot.variables (definisi BEKU, K9 —
+ * bukan query ke template_variables hidup). lib/event.ts tokensFor()
+ * mencampurnya ke token compositor, WelcomeScreen.tsx menampilkan yang
+ * usedIn='welcome' di luar 5 token standar. Kartu video pesan suara &
+ * teks bagikan (usedIn='video_card'/'share') SENGAJA belum disambungkan
+ * — cakupan minimal, keputusan pemilik produk 16 Agu, dicatat sebagai
+ * gap terpisah yang lebih kecil dampaknya.
  */
 import { eq, and, sql } from "drizzle-orm";
 import { db } from "../db/client";
-import { events } from "../db/schema/events";
+import { events, eventVariableValues } from "../db/schema/events";
 import { frames, assets } from "../db/schema/templates";
 import { quotaLedger } from "../db/schema/commercial";
 import type { EventConfig, EventTheme } from "../event";
@@ -100,6 +102,18 @@ export async function resolvePostgresPlaygroundBySlug(slug: string): Promise<Res
   const session = event.sessionConfig as SessionConfig;
   const filterCss = FILTER_PRESETS.find((p) => p.id === session.filterId)?.css ?? "none";
 
+  // Nilai KLIEN (bisa berubah sampai publikasi berikutnya membekukan
+  // ulang) dipasangkan dengan label/usedIn dari snapshot.variables
+  // (definisi beku, K9) — bukan query ke template_variables hidup.
+  const values = await db.select().from(eventVariableValues).where(eq(eventVariableValues.eventId, event.id));
+  const valueMap = new Map(values.map((v) => [v.variableKey, v.valueText ?? ""]));
+  const variables = snapshot.variables.map((def) => ({
+    key: def.key,
+    label: def.label,
+    value: valueMap.get(def.key) ?? "",
+    usedIn: def.usedIn,
+  }));
+
   const now = Date.now();
   let status: EventConfig["status"] = event.status === "live" || event.status === "ended" ? event.status : "draft";
   if (status === "live" && event.expiresAt && now > event.expiresAt.getTime()) {
@@ -133,6 +147,7 @@ export async function resolvePostgresPlaygroundBySlug(slug: string): Promise<Res
       moments: { enabled: event.galleryEnabled },
       share: session.share,
     },
+    variables,
   };
 
   return {
