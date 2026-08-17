@@ -42,7 +42,14 @@ export const orderStatusEnum = pgEnum("order_status", [
   "expired",
   "refunded",
 ]);
-export const paymentMethodEnum = pgEnum("payment_method", ["manual_transfer", "qris", "va", "card"]);
+// "midtrans" DI LUAR 4 nilai resmi dok 03 (manual_transfer/qris/va/card) —
+// deviasi disengaja, dicatat dok 09 §7 v1.3. Kanal SPESIFIK yang tamu pilih
+// di dalam popup Snap (VA bank tertentu, QRIS, e-wallet, kartu) TIDAK
+// dipetakan ke 3 nilai lama yang lebih sempit itu — Midtrans mendukung
+// jauh lebih banyak kanal (GoPay, ShopeePay, dst) daripada yang bisa
+// dibedakan 3 nilai itu. "midtrans" mewakili "dibayar lewat gateway",
+// detail kanalnya (kalau perlu) disimpan di `payment_ref`.
+export const paymentMethodEnum = pgEnum("payment_method", ["manual_transfer", "qris", "va", "card", "midtrans"]);
 export const quotaLedgerEntryTypeEnum = pgEnum("quota_ledger_entry_type", [
   "purchase",
   "allocation",

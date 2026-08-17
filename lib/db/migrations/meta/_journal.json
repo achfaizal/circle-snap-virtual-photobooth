@@ -99,6 +99,13 @@
       "when": 1786901190859,
       "tag": "0013_fearless_captain_marvel",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1786953686991,
+      "tag": "0014_fancy_lucky_pierre",
+      "breakpoints": true
     }
   ]
 }
