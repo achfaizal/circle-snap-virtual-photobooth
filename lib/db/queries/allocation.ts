@@ -9,6 +9,7 @@ import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "../client";
 import { accounts, events, orders, quotaLedger } from "../schema";
 import { recordAudit } from "../../services/auditLog";
+import { maybeNotifyQuotaThreshold } from "../../services/quotaNotify";
 
 export type AllocateResult =
   | { ok: true; walletBalance: number; eventQuota: number }
@@ -104,6 +105,16 @@ export async function allocateWalletToEvent(
     } catch (err) {
       console.error("Gagal mencatat audit quota.allocate:", err);
     }
+
+    // Langkah 14 Tahap 4 (D-15) — menambah kuota bisa membawa acara
+    // PULIH di atas ambang 20% (lihat catatan idempotensi di
+    // maybeNotifyQuotaThreshold), jadi tetap dicek di sini, bukan cuma
+    // di jalur klaim.
+    try {
+      await maybeNotifyQuotaThreshold(eventId);
+    } catch (err) {
+      console.error("Gagal mengecek ambang notifikasi kuota:", err);
+    }
   }
 
   return result;
@@ -193,6 +204,12 @@ export async function deallocateEventToWallet(
       });
     } catch (err) {
       console.error("Gagal mencatat audit quota.deallocate:", err);
+    }
+
+    try {
+      await maybeNotifyQuotaThreshold(eventId);
+    } catch (err) {
+      console.error("Gagal mengecek ambang notifikasi kuota:", err);
     }
   }
 

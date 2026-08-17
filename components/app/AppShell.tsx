@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import type { AccountRole, AccountType } from "@/lib/db/queries/accounts";
+import NotificationBell from "./NotificationBell";
 
 /**
  * Bingkai halaman /app/* (Tahap 3) — TERPISAH dari components/admin/
@@ -70,6 +71,7 @@ export default function AppShell({
               Billing
             </Link>
           )}
+          <NotificationBell />
           <div style={{ textAlign: "right", lineHeight: 1.3 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: "#18181B" }}>{accountDisplayName}</div>
             <div style={{ fontSize: 11.5, color: "#71717A", fontWeight: 600 }}>

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { claimQuota } from "@/lib/db/queries/claimQuota";
 import { recordCompletedSession } from "@/lib/db/queries/sessions";
 import { receiptNo } from "@/lib/event";
+import { maybeNotifyQuotaThreshold } from "@/lib/services/quotaNotify";
 import { db } from "@/lib/db/client";
 import { events } from "@/lib/db/schema/events";
 
@@ -78,6 +79,16 @@ export async function POST(request: Request) {
       // K14 "gagal pelan" — klaim SUDAH sukses (respons di bawah tetap
       // dikirim), fondasi Momen boleh gagal tanpa mengunci tamu.
     }
+  }
+
+  // Langkah 14 Tahap 4 (D-15) — DI LUAR transaksi K1, sama pola dengan
+  // fondasi Momen di atas. Baca ulang saldo dari jurnal, bukan
+  // `result.remaining` (klaim yg `alreadyClaimed=true` tidak mengurangi
+  // lagi, tapi ambang tetap perlu dicek ulang tiap panggilan).
+  try {
+    await maybeNotifyQuotaThreshold(eventId);
+  } catch {
+    // K14 — gagal kirim notifikasi bukan alasan menggagalkan klaim.
   }
 
   return NextResponse.json({ remaining: result.remaining, alreadyClaimed: result.alreadyClaimed });
