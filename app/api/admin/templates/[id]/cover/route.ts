@@ -6,6 +6,7 @@ import { requireStaff } from "@/lib/adminAuth";
 import { getTemplate, updateTemplate } from "@/lib/db/queries/templates";
 import { db } from "@/lib/db/client";
 import { assets } from "@/lib/db/schema";
+import { stripImageMetadata } from "@/lib/services/imageProcessing";
 
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "template-assets");
 
@@ -29,8 +30,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Berkas gambar wajib diisi." }, { status: 400 });
   }
 
-  const bytes = Buffer.from(await file.arrayBuffer());
-  const ext = file.type.includes("png") ? "png" : file.type.includes("webp") ? "webp" : "jpg";
+  const original = Buffer.from(await file.arrayBuffer());
+  const { buffer: bytes, format } = await stripImageMetadata(original); // K7/D-17
+  const ext = format === "png" ? "png" : format === "webp" ? "webp" : "jpg";
+  const mime = format === "png" ? "image/png" : format === "webp" ? "image/webp" : "image/jpeg";
   const assetId = randomUUID();
   await mkdir(UPLOAD_DIR, { recursive: true });
   await writeFile(path.join(UPLOAD_DIR, `${assetId}.${ext}`), bytes);
@@ -42,7 +45,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       accountId: null,
       kind: "cover",
       storageKey: `/uploads/template-assets/${assetId}.${ext}`,
-      mime: file.type,
+      mime,
       bytes: bytes.byteLength,
       checksumSha256: createHash("sha256").update(bytes).digest("hex"),
       visibility: "public",

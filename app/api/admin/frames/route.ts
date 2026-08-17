@@ -6,6 +6,7 @@ import { requireStaff } from "@/lib/adminAuth";
 import { validateFrame } from "@/lib/services/frameValidator";
 import { detectSlots } from "@/lib/services/slots";
 import { createSystemAsset, createSystemFrame, listSystemFrames } from "@/lib/db/queries/systemFrames";
+import { stripImageMetadata } from "@/lib/services/imageProcessing";
 
 /**
  * Bingkai sistem — Langkah 4 rencana Tahap 2. Unggah PNG → deteksi slot
@@ -59,7 +60,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Nama bingkai wajib diisi, 2–80 karakter." }, { status: 400 });
   }
 
-  const bytes = Buffer.from(await file.arrayBuffer());
+  const original = Buffer.from(await file.arrayBuffer());
+  // K7/D-17 — dibersihkan sebelum deteksi/validasi, lihat catatan sama
+  // di app/api/app/events/[id]/frames/route.ts (jalur klien).
+  let bytes: Buffer;
+  try {
+    bytes = (await stripImageMetadata(original)).buffer;
+  } catch {
+    return NextResponse.json({ error: "Berkas ini bukan PNG yang valid." }, { status: 400 });
+  }
 
   // Deteksi otomatis dulu (utk paper + slot awal), lalu jalankan
   // validator V1-V8 terhadap slot hasil deteksi itu.

@@ -7,6 +7,7 @@ import { getEventForAccount } from "@/lib/db/queries/events";
 import { listEventFrames, countCustomEventFrames, createCustomEventFrame } from "@/lib/db/queries/eventFrames";
 import { validateFrame } from "@/lib/services/frameValidator";
 import { detectSlots } from "@/lib/services/slots";
+import { stripImageMetadata } from "@/lib/services/imageProcessing";
 
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "event-frames");
 const MAX_CUSTOM_FRAMES = 10; // dok 05 §5.4: "batas bawaan 10 bingkai kustom per acara"
@@ -61,7 +62,18 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Nama bingkai wajib diisi, 2–80 karakter." }, { status: 400 });
   }
 
-  const bytes = Buffer.from(await file.arrayBuffer());
+  const original = Buffer.from(await file.arrayBuffer());
+  // K7/D-17 — dibersihkan SEBELUM deteksi slot/validasi, supaya berkas
+  // yang divalidasi PERSIS SAMA dengan yang disimpan (satu sumber
+  // kebenaran, bukan dua buffer berbeda yang kebetulan mirip). Re-encode
+  // PNG lossless (diuji Langkah 1: piksel+alpha identik), jadi hasil
+  // deteksi slot tidak terpengaruh.
+  let bytes: Buffer;
+  try {
+    bytes = (await stripImageMetadata(original)).buffer;
+  } catch {
+    return NextResponse.json({ error: "Berkas ini bukan PNG yang valid." }, { status: 400 });
+  }
 
   let detected;
   try {
