@@ -5,6 +5,7 @@ import { listCategories } from "@/lib/db/queries/categories";
 import { canEditStartsAt } from "@/lib/services/eventEditGuard";
 import { toLocalInputValue } from "@/lib/services/indonesiaTimezone";
 import EventDetailsForm from "@/components/app/EventDetailsForm";
+import EndEventPanel from "@/components/app/EndEventPanel";
 
 export default async function EventDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getSessionAccount();
@@ -37,6 +38,13 @@ export default async function EventDetailsPage({ params }: { params: Promise<{ i
         }}
         startsAtLocked={startsAtLocked}
       />
+
+      {/* dok 01 §3.2 — owner/manager selalu boleh; operator cuma kalau
+          diizinkan per-acara (operatorCanEnd). Cuma relevan untuk acara
+          yang sedang berjalan. */}
+      {event.status === "live" && (session.role !== "operator" || event.operatorCanEnd) && (
+        <EndEventPanel eventId={event.id} />
+      )}
     </div>
   );
 }

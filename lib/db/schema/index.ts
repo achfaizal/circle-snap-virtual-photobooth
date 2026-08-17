@@ -11,3 +11,4 @@ export * from "./commercial";
 export * from "./sessions";
 export * from "./audit";
 export * from "./notifications";
+export * from "./settings";
