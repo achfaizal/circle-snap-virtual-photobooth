@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, X } from "lucide-react";
+import { Check, Copy, Download, X } from "lucide-react";
 import Spinner from "@/components/admin/Spinner";
+import { showSuccessToast, showErrorToast } from "@/lib/utils";
 
 const ALL_POINTS = [
   "Minimal 1 bingkai aktif",
@@ -21,10 +22,12 @@ const ALL_POINTS = [
 
 export default function EventPublishPanel({
   eventId,
+  slug,
   failed,
   alreadyLive,
 }: {
   eventId: string;
+  slug: string;
   failed: { point: number; label: string }[];
   alreadyLive: boolean;
 }) {
@@ -52,9 +55,105 @@ export default function EventPublishPanel({
   };
 
   if (alreadyLive) {
+    const boothPath = `/e/${slug}`;
+    const boothUrl = typeof window !== "undefined" ? `${window.location.origin}${boothPath}` : boothPath;
+    const qrRoute = `/api/app/events/${eventId}/qr`;
+
+    const copyLink = async () => {
+      try {
+        await navigator.clipboard.writeText(boothUrl);
+        showSuccessToast("Tautan tersalin.");
+      } catch {
+        showErrorToast("Gagal menyalin — salin manual dari kotak di atas.");
+      }
+    };
+
     return (
       <div style={{ padding: 16, borderRadius: 12, background: "#F0FDF4", border: "1px solid #BBF7D0" }}>
-        <p style={{ fontSize: 13, color: "#166534", fontWeight: 700 }}>Acara ini sudah live.</p>
+        <p style={{ fontSize: 13, color: "#166534", fontWeight: 700, marginBottom: 14 }}>Acara ini sudah live.</p>
+
+        {/* dok 05 §5.5 "Blok Link & QR" — tautan+salin, pratinjau QR,
+            unduh PNG/PDF A4/PDF A5. "QR versi PDF siap cetak bukan
+            tambahan kecil... pemindaian gagal adalah kegagalan produk." */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+          <input
+            readOnly
+            value={boothUrl}
+            onFocus={(e) => e.target.select()}
+            style={{
+              flex: 1,
+              minWidth: 0,
+              padding: "9px 12px",
+              borderRadius: 8,
+              border: "1px solid #BBF7D0",
+              background: "white",
+              fontSize: 12.5,
+              color: "#18181B",
+              fontFamily: "monospace",
+            }}
+          />
+          <button
+            type="button"
+            onClick={copyLink}
+            aria-label="Salin tautan"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "9px 14px",
+              borderRadius: 8,
+              border: "1px solid #16A34A",
+              background: "white",
+              color: "#166534",
+              fontWeight: 700,
+              fontSize: 12.5,
+              cursor: "pointer",
+              flexShrink: 0,
+            }}
+          >
+            <Copy size={13} /> Salin
+          </button>
+        </div>
+
+        <div style={{ display: "flex", gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element -- pratinjau QR dari rute API sendiri, dinamis per acara */}
+          <img
+            src={`${qrRoute}?format=png`}
+            alt={`Kode QR acara ${slug}`}
+            width={140}
+            height={140}
+            style={{ borderRadius: 8, border: "1px solid #BBF7D0", background: "white", flexShrink: 0 }}
+          />
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 200 }}>
+            <p style={{ fontSize: 12, color: "#166534" }}>
+              Cetak &amp; tempel di lokasi acara supaya tamu gampang memindai — QR dari layar HP sering buram
+              kalau difoto ulang.
+            </p>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <a
+                href={`${qrRoute}?format=png`}
+                download
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 8, border: "1px solid #BBF7D0", background: "white", color: "#166534", fontWeight: 700, fontSize: 12, textDecoration: "none" }}
+              >
+                <Download size={12} /> PNG
+              </a>
+              <a
+                href={`${qrRoute}?format=pdf-a4`}
+                download
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 8, border: "1px solid #BBF7D0", background: "white", color: "#166534", fontWeight: 700, fontSize: 12, textDecoration: "none" }}
+              >
+                <Download size={12} /> PDF A4
+              </a>
+              <a
+                href={`${qrRoute}?format=pdf-a5`}
+                download
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 8, border: "1px solid #BBF7D0", background: "white", color: "#166534", fontWeight: 700, fontSize: 12, textDecoration: "none" }}
+              >
+                <Download size={12} /> PDF A5
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

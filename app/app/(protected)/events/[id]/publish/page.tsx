@@ -20,7 +20,7 @@ export default async function EventPublishPage({ params }: { params: Promise<{ i
       <p style={{ fontSize: 13, color: "#71717A", marginBottom: 20 }}>
         Semua 11 poin harus lolos sebelum acara bisa dilihat tamu (AB-12).
       </p>
-      <EventPublishPanel eventId={event.id} failed={gate.failed} alreadyLive={event.status !== "draft"} />
+      <EventPublishPanel eventId={event.id} slug={event.slug} failed={gate.failed} alreadyLive={event.status !== "draft"} />
     </div>
   );
 }
