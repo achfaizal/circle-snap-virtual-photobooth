@@ -1,16 +1,20 @@
-import { list } from "@vercel/blob";
-import { readdir, readFile, stat } from "node:fs/promises";
-import path from "node:path";
+import { and, desc, eq } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import { NextResponse } from "next/server";
+import { db } from "@/lib/db/client";
+import { events } from "@/lib/db/schema/events";
+import { sessions, strips } from "@/lib/db/schema/sessions";
+import { assets } from "@/lib/db/schema/templates";
+import { getSessionAccount } from "@/lib/clientAuth";
 
 /**
- * Tidak ada database — daftar momen dibangun langsung dari nama file yang
- * tersimpan (prefix per event code), baik dari Vercel Blob (production)
- * maupun folder lokal (dev, lihat app/api/moments/config). Foto & video
- * satu momen yang sama berbagi nama dasar (momentId = nomor struk tamu,
- * sudah unik per event), jadi cukup dikelompokkan dari ekstensinya. Nama
- * tamu (kalau diisi) tersimpan sebagai sidecar `{momentId}.json` terpisah —
- * lihat lib/moments.ts uploadToBlob/uploadToLocal.
+ * Langkah 6 Tahap 4 — diganti total dari file-listing prefix (Blob/folder
+ * lokal) jadi query `strips` Postgres (dibuat Langkah 5 saat sesi tamu
+ * selesai). `strips.session_id` DIPAKAI ULANG sebagai `Moment.id` — sama
+ * persis nilai yang tadinya jadi nama dasar file. `photoUrl`/`videoUrl`
+ * diambil dari `assets.storage_key`, yang isinya sudah berupa URL siap
+ * pakai di kedua mode (path relatif `/moments-local/...` di dev, URL Blob
+ * penuh di produksi) — tidak perlu tahu mode penyimpanan di sini lagi.
  */
 interface Moment {
   id: string;
@@ -20,132 +24,61 @@ interface Moment {
   guestName?: string;
 }
 
-interface RawEntry {
-  photoUrl?: string;
-  videoUrl?: string;
-  uploadedAt: string;
-  guestName?: string;
-  /** Nama file sidecar JSON, belum dibaca isinya — diselesaikan belakangan
-      lewat finalizeMoments() supaya bisa dibaca paralel (Promise.all),
-      bukan satu-satu berurutan. */
-  jsonName?: string;
-}
-
-function groupByMomentId(
-  names: string[],
-  urlFor: (name: string) => string,
-  uploadedAtFor: (name: string) => string
-): Map<string, RawEntry> {
-  const groups = new Map<string, RawEntry>();
-  for (const name of names) {
-    const dot = name.lastIndexOf(".");
-    if (dot === -1) continue;
-    const id = name.slice(0, dot);
-    const ext = name.slice(dot + 1).toLowerCase();
-    const uploadedAt = uploadedAtFor(name);
-
-    const entry = groups.get(id) ?? { uploadedAt };
-    if (ext === "png" || ext === "jpg" || ext === "jpeg") entry.photoUrl = urlFor(name);
-    if (ext === "mp4" || ext === "webm") entry.videoUrl = urlFor(name);
-    if (ext === "json") entry.jsonName = name;
-    if (uploadedAt > entry.uploadedAt) entry.uploadedAt = uploadedAt;
-    groups.set(id, entry);
-  }
-  return groups;
-}
-
-/** Membaca nama tamu dari tiap sidecar JSON secara paralel, lalu merangkai
-    hasil akhirnya. Gagal baca satu file (rusak/hilang) tidak menjatuhkan
-    seluruh daftar — momen itu tetap tampil, cuma tanpa nama. */
-async function finalizeMoments(
-  groups: Map<string, RawEntry>,
-  readName: (jsonName: string) => Promise<string | undefined>
-): Promise<Moment[]> {
-  const entries = Array.from(groups.entries());
-  await Promise.all(
-    entries.map(async ([, entry]) => {
-      if (!entry.jsonName) return;
-      entry.guestName = await readName(entry.jsonName).catch(() => undefined);
-    })
-  );
-
-  return entries
-    .map(([id, v]) => ({
-      id,
-      photoUrl: v.photoUrl,
-      videoUrl: v.videoUrl,
-      uploadedAt: v.uploadedAt,
-      guestName: v.guestName,
-    }))
-    .sort((a, b) => (a.uploadedAt < b.uploadedAt ? 1 : -1));
-}
-
-function parseName(raw: string): string | undefined {
-  const data = JSON.parse(raw) as { name?: string };
-  return data.name || undefined;
-}
+const photoAssets = alias(assets, "moments_photo_assets");
+const videoAssets = alias(assets, "moments_video_assets");
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const eventCode = searchParams.get("event")?.toUpperCase();
+  const eventCode = searchParams.get("event");
   if (!eventCode) {
     return NextResponse.json({ error: "Parameter event wajib diisi." }, { status: 400 });
   }
 
-  if (process.env.VERCEL) {
-    const prefix = `moments/${eventCode}/`;
-    // list() Vercel Blob dibatasi 1000 per panggilan — event ramai (banyak
-    // tamu, tiap momen 2-3 file) gampang lewat itu. Ambil semua halaman
-    // lewat cursor, bukan cuma panggilan pertama, supaya momen lama tidak
-    // "hilang" diam-diam dari galeri begitu jumlah file makin banyak.
-    const blobs: Awaited<ReturnType<typeof list>>["blobs"] = [];
-    let cursor: string | undefined;
-    do {
-      const page = await list({ prefix, limit: 1000, cursor });
-      blobs.push(...page.blobs);
-      cursor = page.hasMore ? page.cursor : undefined;
-    } while (cursor);
-    const groups = groupByMomentId(
-      blobs.map((b) => b.pathname.slice(prefix.length)),
-      (name) => blobs.find((b) => b.pathname === `${prefix}${name}`)!.url,
-      (name) => {
-        const uploadedAt = blobs.find((b) => b.pathname === `${prefix}${name}`)!.uploadedAt;
-        return uploadedAt instanceof Date ? uploadedAt.toISOString() : String(uploadedAt);
-      }
-    );
-    const moments = await finalizeMoments(groups, async (jsonName) => {
-      const url = blobs.find((b) => b.pathname === `${prefix}${jsonName}`)!.url;
-      const res = await fetch(url);
-      if (!res.ok) return undefined;
-      return parseName(await res.text());
-    });
-    return NextResponse.json({ moments });
+  const [event] = await db.select().from(events).where(eq(events.slug, eventCode.toLowerCase()));
+  // Acara tidak ada di Postgres = tidak ada satu pun baris strip yang bisa
+  // ditulis untuknya — daftar kosong, bukan error (tamu di URL acara
+  // kedaluwarsa/salah tidak perlu melihat pesan galangan teknis).
+  if (!event) return NextResponse.json({ moments: [] });
+
+  // D-18/K6 — gerbang galeri privat, SEBELUM baris strip dibaca.
+  if (!event.galleryEnabled) {
+    return NextResponse.json({ error: "Galeri Momen untuk acara ini tidak diaktifkan." }, { status: 403 });
+  }
+  const session = await getSessionAccount();
+  const isOwner = session?.accountId === event.accountId;
+  if (!event.galleryPublic && !isOwner) {
+    return NextResponse.json({ error: "Galeri Momen acara ini privat." }, { status: 403 });
   }
 
-  // Mode local dev — baca langsung dari public/moments-local/{event}/.
-  const dir = path.join(process.cwd(), "public", "moments-local", eventCode);
-  let files: string[];
-  try {
-    files = await readdir(dir);
-  } catch {
-    return NextResponse.json({ moments: [] });
-  }
-
-  const stats = new Map<string, Date>();
-  await Promise.all(
-    files.map(async (f) => {
-      const s = await stat(path.join(dir, f));
-      stats.set(f, s.mtime);
+  // Tamu polos cuma lihat yang tidak disembunyikan moderasi (Langkah 7);
+  // pemilik akun (owner/manager/operator) lihat semuanya, sama seperti
+  // panel moderasi di /app/*.
+  const rows = await db
+    .select({
+      id: strips.sessionId,
+      createdAt: strips.createdAt,
+      guestName: sessions.guestName,
+      photoUrl: photoAssets.storageKey,
+      videoUrl: videoAssets.storageKey,
     })
-  );
+    .from(strips)
+    .innerJoin(sessions, eq(sessions.id, strips.sessionId))
+    .leftJoin(photoAssets, eq(photoAssets.id, strips.imageAssetId))
+    .leftJoin(videoAssets, eq(videoAssets.id, strips.videoAssetId))
+    .where(
+      isOwner
+        ? eq(strips.eventId, event.id)
+        : and(eq(strips.eventId, event.id), eq(strips.isHidden, false))
+    )
+    .orderBy(desc(strips.createdAt));
 
-  const groups = groupByMomentId(
-    files,
-    (name) => `/moments-local/${eventCode}/${name}`,
-    (name) => (stats.get(name) ?? new Date(0)).toISOString()
-  );
-  const moments = await finalizeMoments(groups, async (jsonName) =>
-    parseName(await readFile(path.join(dir, jsonName), "utf-8"))
-  );
+  const moments: Moment[] = rows.map((r) => ({
+    id: r.id,
+    photoUrl: r.photoUrl ?? undefined,
+    videoUrl: r.videoUrl ?? undefined,
+    uploadedAt: r.createdAt.toISOString(),
+    guestName: r.guestName ?? undefined,
+  }));
+
   return NextResponse.json({ moments });
 }

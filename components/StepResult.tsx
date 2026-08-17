@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { canvasToBlob, compose, downloadBlob } from "@/lib/compositor";
 import { bumpUsed, receiptNo, tokensFor } from "@/lib/event";
 import { uploadMoment } from "@/lib/moments";
+import { matchFilterPreset } from "@/lib/services/filters";
 import { useSession } from "@/lib/store";
 import { renderVoiceCard, videoExtension, videoSupported } from "@/lib/video";
 import MomentsGallery from "./MomentsGallery";
@@ -86,7 +87,6 @@ export default function StepResult() {
     mirror,
     voice,
     receipt,
-    momentId,
     finish,
     guestName,
     filterCss,
@@ -133,10 +133,21 @@ export default function StepResult() {
       }
 
       try {
+        // Langkah 5 Tahap 4 — field tambahan supaya server bisa menulis
+        // sessions/strips SETELAH klaim commit (fondasi D-28/D-16).
+        // matchFilterPreset(null saat filterCss custom bukan preset
+        // terdaftar) -> "none" sebagai jatuh balik, bukan error keras.
         const res = await fetch("/api/quota/claim", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ eventId: event.id, sessionId: sessionIdRef.current }),
+          body: JSON.stringify({
+            eventId: event.id,
+            sessionId: sessionIdRef.current,
+            frameId: template?.id,
+            guestName: guestName || undefined,
+            filterId: matchFilterPreset(filterCss)?.id ?? "none",
+            variableSnapshot: tokensFor(event),
+          }),
         });
 
         if (res.status === 409) {
@@ -198,7 +209,7 @@ export default function StepResult() {
      (mis. lagi offline) sengaja diam saja — tamu tetap dapat struk dan bisa
      unduh manual, jangan sampai fitur sampingan ini mengganggu alur utama. */
   useEffect(() => {
-    if (!event || !template || !receipt || !momentId || uploaded.current) return;
+    if (!event || !template || !receipt || uploaded.current) return;
     uploaded.current = true;
 
     (async () => {
@@ -221,11 +232,12 @@ export default function StepResult() {
         }
         await uploadMoment({
           eventCode: event.code,
-          // ID unik per-sesi (crypto.randomUUID), BUKAN receipt — receipt
-          // cuma nomor struk lokal HP tamu ini, dua tamu beda HP bisa
-          // sama-sama dapat receipt #1 dan saling menimpa momen storage
-          // masing-masing kalau dipakai sebagai kunci di sini.
-          momentId,
+          // SAMA dengan sessionId yang sudah dikirim ke /api/quota/claim
+          // (Langkah 5 Tahap 4, dok 03 §6.1) — bukan lagi id acak
+          // terpisah. Dua tamu beda HP tetap tidak akan tabrakan (UUID
+          // acak per sesi), dan sekarang server bisa mencocokkan
+          // unggahan ini ke baris `strips` yang sudah dibuat saat klaim.
+          momentId: sessionIdRef.current,
           photo: photoBlob,
           video: videoBlob,
           guestName: guestName || undefined,
@@ -235,7 +247,7 @@ export default function StepResult() {
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [receipt, momentId]);
+  }, [receipt]);
 
   // receipt sudah punya prefix pendek turunan dari kode event (mis.
   // "ENG-0001") — tidak perlu ditempel lagi dengan slug kode event penuh,

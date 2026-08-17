@@ -99,6 +99,17 @@ async function uploadToLocal(
   if (!res.ok) throw new Error("Upload momen (local) gagal.");
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** dok 07 §8: "Unggah gagal → coba ulang otomatis 3 kali dengan jeda
+    menaik. Tetap gagal → strip tetap bisa diunduh tamu; tandai entri
+    Momen pending_upload." `momentId` di sini SEKARANG sama dengan
+    `sessionId` yang sudah dikirim ke klaim kuota (Langkah 5 Tahap 4) —
+    dipakai menandai `strips.upload_status` lewat /api/moments/mark-failed
+    kalau semua retry habis, supaya statusnya jujur (bukan diam-diam
+    tetap 'pending' selamanya). */
 export async function uploadMoment({
   eventCode,
   momentId,
@@ -114,12 +125,29 @@ export async function uploadMoment({
 }): Promise<void> {
   const code = eventCode.toUpperCase();
   const mode = await storageMode();
+  const attempt = () => (mode === "blob" ? uploadToBlob(code, momentId, photo, video, guestName) : uploadToLocal(code, momentId, photo, video, guestName));
 
-  if (mode === "blob") {
-    await uploadToBlob(code, momentId, photo, video, guestName);
-  } else {
-    await uploadToLocal(code, momentId, photo, video, guestName);
+  const delaysMs = [1000, 3000, 8000]; // jeda menaik, 3 percobaan
+  let lastError: unknown;
+  for (let i = 0; i <= delaysMs.length; i++) {
+    try {
+      await attempt();
+      return;
+    } catch (e) {
+      lastError = e;
+      if (i < delaysMs.length) await sleep(delaysMs[i]);
+    }
   }
+
+  // Semua retry habis — tandai gagal (bukan diam-diam tetap 'pending'),
+  // lalu tetap lempar supaya pemanggil tahu unduhan manual jadi jalan
+  // satu-satunya (tamu tetap punya struk, K14).
+  await fetch("/api/moments/mark-failed", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sessionId: momentId }),
+  }).catch(() => {});
+  throw lastError;
 }
 
 export async function fetchMoments(eventCode: string): Promise<Moment[]> {

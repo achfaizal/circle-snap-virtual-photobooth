@@ -1,6 +1,13 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { createHash } from "node:crypto";
+import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { stripImageMetadata } from "@/lib/services/imageProcessing";
+import { db } from "@/lib/db/client";
+import { events } from "@/lib/db/schema/events";
+import { assets } from "@/lib/db/schema/templates";
+import { markStripUploaded } from "@/lib/db/queries/sessions";
 
 /**
  * Cuma dipakai saat `next dev` di komputer sendiri (lihat
@@ -48,15 +55,71 @@ export async function POST(request: Request) {
   const dir = path.join(MOMENTS_DIR, eventCode);
   await mkdir(dir, { recursive: true });
 
-  await writeFile(path.join(dir, `${momentId}.png`), Buffer.from(await photo.arrayBuffer()));
+  // K7/D-17 — PNG ini lahir dari <canvas> compositor sisi tamu, bukan
+  // foto kamera mentah (risiko GPS EXIF jauh lebih kecil dibanding
+  // bukti transfer), tapi dibersihkan juga demi konsisten "SEMUA
+  // gambar" (dok 08 §1.4) — murah, tidak ada alasan mengecualikannya.
+  const { buffer: cleanPhoto, width, height } = await stripImageMetadata(Buffer.from(await photo.arrayBuffer()));
+  await writeFile(path.join(dir, `${momentId}.png`), cleanPhoto);
 
+  let videoBytes: Buffer | null = null;
+  let videoExt = "webm";
   if (video instanceof File) {
-    const ext = video.type.includes("mp4") ? "mp4" : "webm";
-    await writeFile(path.join(dir, `${momentId}.${ext}`), Buffer.from(await video.arrayBuffer()));
+    videoExt = video.type.includes("mp4") ? "mp4" : "webm";
+    videoBytes = Buffer.from(await video.arrayBuffer());
+    await writeFile(path.join(dir, `${momentId}.${videoExt}`), videoBytes);
   }
 
   if (guestName) {
     await writeFile(path.join(dir, `${momentId}.json`), JSON.stringify({ name: guestName }));
+  }
+
+  // Langkah 5 Tahap 4 — tandai strip (dibuat /api/quota/claim setelah
+  // klaim sukses) sekarang benar-benar punya gambar. `momentId` DI SINI
+  // sama dengan `sessionId` klaim (lihat lib/moments.ts). Diam-diam
+  // dilewati kalau acara belum ada di Postgres (jalur JSON lama) atau
+  // baris strip belum sempat tertulis — bukan alasan menggagalkan
+  // unggahan yang sudah berhasil tersimpan di disk.
+  try {
+    const [event] = await db.select().from(events).where(eq(events.slug, eventCode.toLowerCase()));
+    if (event) {
+      const [photoAsset] = await db
+        .insert(assets)
+        .values({
+          accountId: event.accountId,
+          kind: "strip",
+          storageKey: `/moments-local/${eventCode}/${momentId}.png`,
+          mime: "image/png",
+          bytes: cleanPhoto.byteLength,
+          width,
+          height,
+          checksumSha256: createHash("sha256").update(cleanPhoto).digest("hex"),
+          visibility: "private", // K6 — galeri privat bawaan
+        })
+        .returning();
+
+      let videoAssetId: string | undefined;
+      if (videoBytes) {
+        const [videoAsset] = await db
+          .insert(assets)
+          .values({
+            accountId: event.accountId,
+            kind: "video",
+            storageKey: `/moments-local/${eventCode}/${momentId}.${videoExt}`,
+            mime: `video/${videoExt}`,
+            bytes: videoBytes.byteLength,
+            checksumSha256: createHash("sha256").update(videoBytes).digest("hex"),
+            visibility: "private",
+          })
+          .returning();
+        videoAssetId = videoAsset.id;
+      }
+
+      await markStripUploaded(momentId, { imageAssetId: photoAsset.id, videoAssetId });
+    }
+  } catch {
+    // Fondasi Momen (Tahap 4) gagal mencatat — berkas SUDAH aman di
+    // disk, tamu tidak boleh terpengaruh (K14).
   }
 
   return NextResponse.json({ ok: true });
