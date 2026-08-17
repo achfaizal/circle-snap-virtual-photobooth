@@ -69,16 +69,14 @@ async function uploadToBlob(
     });
   }
 
-  // Sidecar JSON kecil berisi nama tamu — file terpisah, bukan ditambahkan
-  // sebagai query/metadata Blob, supaya /api/moments (GET) bisa membacanya
-  // dengan cara yang sama persis di mode local maupun blob.
-  if (guestName) {
-    await upload(`moments/${code}/${momentId}.json`, JSON.stringify({ name: guestName }), {
-      access: "public",
-      handleUploadUrl: "/api/moments/upload",
-      contentType: "application/json",
-    });
-  }
+  // `guestName` TIDAK LAGI ditulis sebagai sidecar JSON di sini — bug
+  // ditemukan & diperbaiki saat menguji Langkah 18 Tahap 4 (retensi):
+  // sejak Langkah 6, /api/moments (GET) baca nama tamu dari
+  // `sessions.guest_name` (Postgres, diisi saat klaim), bukan dari
+  // sidecar ini lagi. Menulisnya di sini cuma buang satu panggilan
+  // upload Blob per momen (biaya nyata) untuk file yang tidak pernah
+  // dibaca — dan jadi objek yatim yang tidak ikut kena skrip retensi
+  // (Langkah 18 cuma menghapus objek yang tercatat di `assets`).
 }
 
 async function uploadToLocal(

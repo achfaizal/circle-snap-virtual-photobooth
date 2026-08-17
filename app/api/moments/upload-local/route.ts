@@ -34,16 +34,15 @@ export async function POST(request: Request) {
   const momentId = String(form.get("momentId") ?? "");
   const photo = form.get("photo");
   const video = form.get("video");
-  // Karakter kontrol (newline dkk, bukan spasi) dibuang — nama ini nanti
-  // dicetak ke canvas video dan disimpan sebagai JSON, jangan sampai
-  // newline/karakter aneh dari clipboard tamu merusak tampilan atau file
-  // JSON-nya.
-  // eslint-disable-next-line no-control-regex
-  const CONTROL_CHARS = /[\x00-\x1F\x7F]/g;
-  const guestName = String(form.get("guestName") ?? "")
-    .replace(CONTROL_CHARS, "")
-    .trim()
-    .slice(0, 40);
+  // `guestName` di FormData (masih dikirim lib/moments.ts) TIDAK dibaca
+  // di sini lagi — bug ditemukan & diperbaiki saat menguji Langkah 18
+  // (retensi): rute ini dulu (pra-Langkah 6) menulis sidecar
+  // `{momentId}.json` berisi nama tamu, tapi Langkah 6 memindahkan
+  // sumber nama tamu ke `sessions.guest_name` (Postgres, diisi saat
+  // klaim). Sidecar JSON itu jadi tulis-doang, tidak pernah dibaca
+  // siapa pun — DAN jadi objek yatim yang tidak ikut terhapus skrip
+  // retensi (cuma menghapus baris `assets`). Dihapus, bukan cuma
+  // dibiarkan menulis file yang tidak berguna.
 
   if (!SAFE_ID.test(eventCode) || !SAFE_ID.test(momentId)) {
     return NextResponse.json({ error: "eventCode/momentId tidak valid." }, { status: 400 });
@@ -68,10 +67,6 @@ export async function POST(request: Request) {
     videoExt = video.type.includes("mp4") ? "mp4" : "webm";
     videoBytes = Buffer.from(await video.arrayBuffer());
     await writeFile(path.join(dir, `${momentId}.${videoExt}`), videoBytes);
-  }
-
-  if (guestName) {
-    await writeFile(path.join(dir, `${momentId}.json`), JSON.stringify({ name: guestName }));
   }
 
   // Langkah 5 Tahap 4 — tandai strip (dibuat /api/quota/claim setelah
