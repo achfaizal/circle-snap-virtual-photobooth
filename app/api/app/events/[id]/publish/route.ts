@@ -8,6 +8,7 @@ import { db } from "@/lib/db/client";
 import { events } from "@/lib/db/schema/events";
 import { templates, templateVariables, frames } from "@/lib/db/schema/templates";
 import { listEventFrames } from "@/lib/db/queries/eventFrames";
+import { recordAudit, getActorIp } from "@/lib/services/auditLog";
 
 /**
  * Terbitkan acara (Langkah 9 Tahap 3) — AB-12: tidak bisa terbit sebelum
@@ -16,7 +17,7 @@ import { listEventFrames } from "@/lib/db/queries/eventFrames";
  * `expires_at` dari `activeDays` ASLI acara (bukan hardcode), status
  * draft→live.
  */
-export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAccountRole("manager");
   if (guard instanceof NextResponse) return guard;
 
@@ -72,6 +73,24 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     })
     .where(eq(events.id, id))
     .returning();
+
+  // Langkah 11 Tahap 4 (AB-22 "status acara") — K14: publikasi SUDAH
+  // sukses (baris di atas), gagal mencatat jejak tidak boleh membuat
+  // klien melihat error padahal acaranya sudah live.
+  try {
+    await recordAudit({
+      actorUserId: guard.userId,
+      actorIp: getActorIp(request),
+      accountId: guard.accountId,
+      action: "event.publish",
+      entityType: "event",
+      entityId: id,
+      before: { status: "draft" },
+      after: { status: "live" },
+    });
+  } catch (err) {
+    console.error("Gagal mencatat audit event.publish:", err);
+  }
 
   return NextResponse.json({ ok: true, event: published });
 }

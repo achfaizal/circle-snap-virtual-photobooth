@@ -8,6 +8,7 @@
 import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "../client";
 import { accounts, events, orders, quotaLedger } from "../schema";
+import { recordAudit } from "../../services/auditLog";
 
 export type AllocateResult =
   | { ok: true; walletBalance: number; eventQuota: number }
@@ -33,17 +34,19 @@ export async function allocateWalletToEvent(
   strips: number,
   actorUserId: string
 ): Promise<AllocateResult> {
-  return db.transaction(async (tx) => {
+  let quotaBefore = 0;
+
+  const result = await db.transaction(async (tx) => {
     await tx.select({ id: accounts.id }).from(accounts).where(eq(accounts.id, accountId)).for("update");
 
     const [event] = await tx.select().from(events).where(eq(events.id, eventId));
-    if (!event || event.accountId !== accountId) return { ok: false, reason: "event_not_found" };
+    if (!event || event.accountId !== accountId) return { ok: false, reason: "event_not_found" } as const;
 
     const [{ walletBalance }] = await tx
       .select({ walletBalance: sql<number>`COALESCE(SUM(${quotaLedger.strips}), 0)::int` })
       .from(quotaLedger)
       .where(and(eq(quotaLedger.accountId, accountId), sql`${quotaLedger.eventId} IS NULL`));
-    if (walletBalance < strips) return { ok: false, reason: "insufficient_balance" };
+    if (walletBalance < strips) return { ok: false, reason: "insufficient_balance" } as const;
 
     const [{ eventBalance }] = await tx
       .select({ eventBalance: sql<number>`COALESCE(SUM(${quotaLedger.strips}), 0)::int` })
@@ -77,8 +80,33 @@ export async function allocateWalletToEvent(
     await tx.update(accounts).set({ cachedWalletBalance: newWalletBalance }).where(eq(accounts.id, accountId));
     await tx.update(events).set({ cachedQuota: sql`${events.cachedQuota} + ${strips}` }).where(eq(events.id, eventId));
 
-    return { ok: true, walletBalance: newWalletBalance, eventQuota: newEventBalance };
+    quotaBefore = event.cachedQuota;
+    return { ok: true, walletBalance: newWalletBalance, eventQuota: newEventBalance } as const;
   });
+
+  // Langkah 11 Tahap 4 (AB-22) — DI LUAR transaksi K1-serupa di atas
+  // dengan sengaja: jurnal quota_ledger sudah jadi bukti utama uang
+  // berpindah, audit_logs cuma jejak kedua untuk halaman staf (dok 04
+  // §12). Gagal mencatat jejak TIDAK boleh membatalkan alokasi yang
+  // sudah sukses (K14).
+  if (result.ok) {
+    try {
+      await recordAudit({
+        actorUserId,
+        accountId,
+        action: "quota.allocate",
+        entityType: "event",
+        entityId: eventId,
+        before: { eventQuota: quotaBefore },
+        after: { eventQuota: result.eventQuota },
+        reason: "Alokasi manual dompet → acara",
+      });
+    } catch (err) {
+      console.error("Gagal mencatat audit quota.allocate:", err);
+    }
+  }
+
+  return result;
 }
 
 export type DeallocateResult =
@@ -99,18 +127,20 @@ export async function deallocateEventToWallet(
   strips: number,
   actorUserId: string
 ): Promise<DeallocateResult> {
-  return db.transaction(async (tx) => {
+  let quotaBefore = 0;
+
+  const result = await db.transaction(async (tx) => {
     await tx.select({ id: accounts.id }).from(accounts).where(eq(accounts.id, accountId)).for("update");
 
     const [event] = await tx.select().from(events).where(eq(events.id, eventId)).for("update");
-    if (!event || event.accountId !== accountId) return { ok: false, reason: "event_not_found" };
-    if (event.status !== "draft") return { ok: false, reason: "event_live" };
+    if (!event || event.accountId !== accountId) return { ok: false, reason: "event_not_found" } as const;
+    if (event.status !== "draft") return { ok: false, reason: "event_live" } as const;
 
     const [{ eventBalance }] = await tx
       .select({ eventBalance: sql<number>`COALESCE(SUM(${quotaLedger.strips}), 0)::int` })
       .from(quotaLedger)
       .where(eq(quotaLedger.eventId, eventId));
-    if (eventBalance < strips) return { ok: false, reason: "insufficient_quota" };
+    if (eventBalance < strips) return { ok: false, reason: "insufficient_quota" } as const;
 
     const [{ walletBalance }] = await tx
       .select({ walletBalance: sql<number>`COALESCE(SUM(${quotaLedger.strips}), 0)::int` })
@@ -144,8 +174,29 @@ export async function deallocateEventToWallet(
     await tx.update(accounts).set({ cachedWalletBalance: newWalletBalance }).where(eq(accounts.id, accountId));
     await tx.update(events).set({ cachedQuota: sql`${events.cachedQuota} - ${strips}` }).where(eq(events.id, eventId));
 
-    return { ok: true, walletBalance: newWalletBalance, eventQuota: newEventBalance };
+    quotaBefore = event.cachedQuota;
+    return { ok: true, walletBalance: newWalletBalance, eventQuota: newEventBalance } as const;
   });
+
+  // Langkah 11 Tahap 4 — lihat catatan K14 di allocateWalletToEvent().
+  if (result.ok) {
+    try {
+      await recordAudit({
+        actorUserId,
+        accountId,
+        action: "quota.deallocate",
+        entityType: "event",
+        entityId: eventId,
+        before: { eventQuota: quotaBefore },
+        after: { eventQuota: result.eventQuota },
+        reason: "Tarik kembali alokasi manual — acara belum live (AB-08)",
+      });
+    } catch (err) {
+      console.error("Gagal mencatat audit quota.deallocate:", err);
+    }
+  }
+
+  return result;
 }
 
 /** Saldo dompet SEKARANG, dihitung dari jurnal (bukan cache) — dipakai

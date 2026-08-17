@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAccountRole } from "@/lib/clientAuth";
 import { getEventForAccount } from "@/lib/db/queries/events";
 import { getStripForEvent, setStripHidden, deleteStripPermanently } from "@/lib/db/queries/strips";
+import { recordAudit, getActorIp } from "@/lib/services/auditLog";
 
 interface HidePatchBody {
   isHidden?: boolean;
@@ -31,6 +32,23 @@ export async function PATCH(
   }
 
   await setStripHidden(stripId, body.isHidden, guard.userId, body.reason?.trim() || undefined);
+
+  try {
+    await recordAudit({
+      actorUserId: guard.userId,
+      actorIp: getActorIp(request),
+      accountId: guard.accountId,
+      action: body.isHidden ? "moment.hide" : "moment.unhide",
+      entityType: "strip",
+      entityId: stripId,
+      before: { isHidden: strip.isHidden },
+      after: { isHidden: body.isHidden },
+      reason: body.reason?.trim() || null,
+    });
+  } catch (err) {
+    console.error("Gagal mencatat audit moment.hide/unhide:", err);
+  }
+
   return NextResponse.json({ ok: true });
 }
 
@@ -38,7 +56,7 @@ export async function PATCH(
     AB-04: TIDAK menyentuh quota_ledger (lihat komentar
     deleteStripPermanently). */
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string; stripId: string }> }
 ) {
   const guard = await requireAccountRole("manager");
@@ -52,5 +70,20 @@ export async function DELETE(
   if (!strip) return NextResponse.json({ error: "Momen tidak ditemukan." }, { status: 404 });
 
   await deleteStripPermanently(stripId);
+
+  try {
+    await recordAudit({
+      actorUserId: guard.userId,
+      actorIp: getActorIp(request),
+      accountId: guard.accountId,
+      action: "moment.delete",
+      entityType: "strip",
+      entityId: stripId,
+      before: { receiptNo: strip.receiptNo, sessionId: strip.sessionId },
+    });
+  } catch (err) {
+    console.error("Gagal mencatat audit moment.delete:", err);
+  }
+
   return NextResponse.json({ ok: true });
 }

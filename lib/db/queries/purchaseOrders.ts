@@ -9,6 +9,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { db } from "../client";
 import { accounts, events, orders, packages, quotaLedger } from "../schema";
 import { nextOrderNumber, withUniqueSuffix } from "../../services/orderNumber";
+import { recordAudit } from "../../services/auditLog";
 
 export async function listOrders() {
   return db.select().from(orders).orderBy(sql`${orders.createdAt} DESC`);
@@ -103,7 +104,7 @@ export async function approveOrder(orderId: string, verifiedByUserId: string): P
   // `paid` yang sudah komit di langkah 1.
   return db.transaction(async (tx) => {
     const [order] = await tx.select().from(orders).where(eq(orders.id, orderId)).for("update");
-    if (!order) return { ok: false, reason: "not_found" };
+    if (!order) return { ok: false, reason: "not_found" } as const;
 
     const pkg = order.packageSnapshot as { allocationMode: "single_event" | "flexible" };
 
@@ -122,6 +123,7 @@ export async function approveOrder(orderId: string, verifiedByUserId: string): P
         strips: order.strips,
         balanceAfter: newBalance,
         orderId: order.id,
+        actorUserId: verifiedByUserId,
         reason: `Pesanan ${order.number} disetujui`,
       });
       await tx.update(events).set({ cachedQuota: sql`${events.cachedQuota} + ${order.strips}` }).where(eq(events.id, order.targetEventId));
@@ -139,6 +141,7 @@ export async function approveOrder(orderId: string, verifiedByUserId: string): P
         strips: order.strips,
         balanceAfter: newBalance,
         orderId: order.id,
+        actorUserId: verifiedByUserId,
         reason: `Pesanan ${order.number} disetujui`,
       });
       await tx.update(accounts).set({ cachedWalletBalance: sql`${accounts.cachedWalletBalance} + ${order.strips}` }).where(eq(accounts.id, order.accountId));
@@ -159,6 +162,7 @@ export async function approveOrder(orderId: string, verifiedByUserId: string): P
             strips: -order.strips,
             balanceAfter: newBalance - order.strips,
             orderId: order.id,
+            actorUserId: verifiedByUserId,
             reason: `Pesanan ${order.number} — dialokasikan ke acara`,
           },
           {
@@ -168,6 +172,7 @@ export async function approveOrder(orderId: string, verifiedByUserId: string): P
             strips: order.strips,
             balanceAfter: eventBalance + order.strips,
             orderId: order.id,
+            actorUserId: verifiedByUserId,
             reason: `Pesanan ${order.number} — dialokasikan dari dompet`,
           },
         ]);
@@ -177,15 +182,64 @@ export async function approveOrder(orderId: string, verifiedByUserId: string): P
     }
 
     const [fulfilled] = await tx.update(orders).set({ status: "fulfilled" }).where(eq(orders.id, orderId)).returning();
-    return { ok: true, order: fulfilled };
+    return { ok: true, order: fulfilled } as const;
+  }).then(async (result) => {
+    // Langkah 11 Tahap 4 (AB-22) — DI LUAR transaksi jurnal di atas
+    // sengaja, sama alasan K14 dengan allocation.ts: quota_ledger sudah
+    // jadi bukti utama, audit_logs cuma jejak kedua untuk dok 04 §12.
+    if (result.ok) {
+      try {
+        await recordAudit({
+          actorUserId: verifiedByUserId,
+          accountId: result.order.accountId,
+          action: "order.verify",
+          entityType: "order",
+          entityId: orderId,
+          before: { status: current.status },
+          after: { status: "fulfilled" },
+          reason: `Pesanan ${result.order.number} disetujui`,
+        });
+      } catch (err) {
+        console.error("Gagal mencatat audit order.verify:", err);
+      }
+    }
+    return result;
   });
 }
 
-export async function rejectOrder(orderId: string, reason: string): Promise<{ ok: true } | { ok: false; reason: "not_found" | "wrong_status" }> {
+/**
+ * Langkah 11 Tahap 4 — SEBELUM ini `rejectOrder()` tidak mencatat SIAPA
+ * yang menolak sama sekali (bug ditemukan saat wiring audit, dok 09
+ * §5 AB-22 "wajib dicatat... status acara"), beda dari approveOrder()
+ * yang setidaknya punya parameternya (walau isinya juga tidak pernah
+ * dipakai — bug sama, sudah diperbaiki di atas). Parameter
+ * `actorUserId` BARU ditambah di sini.
+ */
+export async function rejectOrder(
+  orderId: string,
+  reason: string,
+  actorUserId: string
+): Promise<{ ok: true } | { ok: false; reason: "not_found" | "wrong_status" }> {
   const [order] = await db.select().from(orders).where(eq(orders.id, orderId));
   if (!order) return { ok: false, reason: "not_found" };
   if (order.status !== "awaiting_payment") return { ok: false, reason: "wrong_status" };
 
   await db.update(orders).set({ status: "cancelled", notesInternal: reason }).where(eq(orders.id, orderId));
+
+  try {
+    await recordAudit({
+      actorUserId,
+      accountId: order.accountId,
+      action: "order.reject",
+      entityType: "order",
+      entityId: orderId,
+      before: { status: order.status },
+      after: { status: "cancelled" },
+      reason,
+    });
+  } catch (err) {
+    console.error("Gagal mencatat audit order.reject:", err);
+  }
+
   return { ok: true };
 }

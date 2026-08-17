@@ -25,6 +25,7 @@ import {
   SlidersHorizontal,
   X,
   Plus,
+  History,
 } from "lucide-react";
 import type { EventKind } from "@/lib/models/event";
 import { eventKindMeta } from "@/lib/services/eventKind";
@@ -56,6 +57,7 @@ const STAFF_NAV = [
   { href: "/admin/frames", label: "Bingkai Sistem", icon: Frame },
   { href: "/admin/templates", label: "Template", icon: LayoutTemplate },
   { href: "/admin/orders", label: "Pesanan", icon: ClipboardCheck },
+  { href: "/admin/audit-logs", label: "Jejak Audit", icon: History },
 ];
 
 /** Menu yang baru muncul setelah ada event aktif — `suffix` ditempel di
