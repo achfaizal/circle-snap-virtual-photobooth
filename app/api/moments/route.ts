@@ -46,6 +46,23 @@ export async function GET(request: Request) {
   }
   const session = await getSessionAccount();
   const isOwner = session?.accountId === event.accountId;
+
+  // K15/AB-11 — ditemukan & diperbaiki saat membangun Langkah 17
+  // (Akhiri Acara): `expired` HARUS mengunci galeri juga (beda dari
+  // `ended`, dok 07 §3.1 tabel — "expired: tertutup", "ended: terbuka"),
+  // tapi sebelum ini rute cuma mengecek galleryEnabled/galleryPublic,
+  // tidak pernah mengecek status/expiresAt sama sekali. `expired` DI SINI
+  // dihitung SUNGGUHAN dari waktu (sama pola claimQuota() K15/K16),
+  // bukan cuma percaya status literal — tidak ada cron yang pernah
+  // menulis status='expired' ke baris acara. Pemilik akun (isOwner)
+  // tetap lolos — gerbang ini cuma mengunci sisi TAMU sesuai tabel di
+  // atas, bukan panel staf /app/* (rute terpisah, tidak disentuh).
+  const isExpired =
+    event.status === "expired" || (event.expiresAt !== null && event.expiresAt.getTime() <= Date.now());
+  if (isExpired && !isOwner) {
+    return NextResponse.json({ error: "Masa aktif acara sudah berakhir." }, { status: 403 });
+  }
+
   if (!event.galleryPublic && !isOwner) {
     return NextResponse.json({ error: "Galeri Momen acara ini privat." }, { status: 403 });
   }
